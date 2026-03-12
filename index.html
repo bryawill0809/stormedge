@@ -38,7 +38,7 @@ html,body{background:#07090d;color:#d0dde8;font-family:'Barlow',sans-serif;min-h
 .station-btn{width:100%;background:var(--s1);border:1px solid var(--bd);color:#fff;padding:13px 18px;text-align:left;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-family:var(--cond);font-size:18px;font-weight:700;letter-spacing:1px;transition:border-color .2s}
 .station-btn:hover{border-color:var(--acid)}
 .station-code{font-family:var(--mono);font-size:11px;color:var(--acid)}
-.station-drop{position:absolute;top:100%;left:0;right:0;background:#0c1929;border:1px solid var(--acid);z-index:100;max-height:320px;overflow-y:auto;display:none}
+.station-drop{position:absolute;top:100%;left:0;right:0;background:#0c1929;border:1px solid var(--acid);z-index:9999;max-height:320px;overflow-y:auto;display:none}
 .station-drop.open{display:block}
 .station-search{width:100%;background:var(--bg);border:none;border-bottom:1px solid var(--bd);color:#fff;padding:10px 14px;font-family:var(--mono);font-size:12px;outline:none}
 .station-item{padding:11px 16px;display:flex;justify-content:space-between;cursor:pointer;font-size:13px;border-bottom:1px solid rgba(255,255,255,.03);transition:background .15s}
@@ -379,7 +379,7 @@ async function loadData(){
       wethr('nws_forecasts.php', {station_code: station.code, date: today, mode: 'history'}).catch(() => null),
     ]);
 
-    console.log('DATA:', { liveHigh: !!liveHigh, latestObs: !!latestObs, todayFcst: !!todayFcst, tomorrowFcst: !!tomorrowFcst });
+    console.log('DATA:', { liveHigh: !!liveHigh, latestObs: !!latestObs, obs1min: !!obs1min, todayFcst: !!todayFcst, tomorrowFcst: !!tomorrowFcst });
 
     // \u2500\u2500 LIVE HIGH \u2500\u2500
     if(liveHigh && liveHigh.wethr_high != null){
@@ -574,6 +574,7 @@ async function loadData(){
 
 async function runAI(station, liveHigh, obs, obs1min, todayFcst, tomorrowFcst, models, history){
   const histVer = history && history.forecasts ? history.forecasts.slice(-6).map(v=>({v:v.version,high:v.high})) : null;
+  let timeContext = '';
 
   // Build pacing table: for each hour offset, show all model temps side by side
   let pacingTable = '';
@@ -595,27 +596,25 @@ async function runAI(station, liveHigh, obs, obs1min, todayFcst, tomorrowFcst, m
   const modelMean = models.length ? Math.round(models.reduce((a,m)=>a+m.high,0)/models.length) : null;
   const modelSpread = models.length ? Math.max(...models.map(m=>m.high))-Math.min(...models.map(m=>m.high)) : null;
 
-  const prompt = 'You are a forensic meteorologist specializing in temperature betting markets (Kalshi/Wethr.net). You have deep expertise in the specific micro-climate of this station.\n\n' +
+  const prompt = timeContext +
+'You are a forensic meteorologist specializing in temperature betting markets (Kalshi/Wethr.net). You have deep expertise in the specific micro-climate of this station.\n\n' +
 'STATION: '+station.name+' ('+station.code+') | DATE: '+getToday()+'\n\n' +
 '=== STATION CLIMATE INTELLIGENCE ===\n'+station.climate+'\n\n' +
-'=== TIME CONTEXT ===\n' +
 (function(){
   const now = new Date();
   const localHour = now.getHours();
-  const localMin = now.getMinutes();
   const timeStr = now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
   const dateStr = now.toLocaleDateString([],{weekday:'long',month:'short',day:'numeric'});
-  let phase = '';
-  let todayStatus = '';
-  if(localHour < 6){ phase='PRE-DAWN'; todayStatus='Today high NOT YET SET. Early morning - peak heating hours still 5-8 hours away.'; }
-  else if(localHour < 10){ phase='MORNING'; todayStatus='Today high NOT YET SET. Morning warming phase beginning. Peak likely 2-6 hours away.'; }
-  else if(localHour < 13){ phase='MID-MORNING'; todayStatus='Today high NOT YET SET. Approaching peak heating window. High likely within 1-3 hours.'; }
-  else if(localHour < 16){ phase='PEAK HEATING'; todayStatus='Today high IS BEING SET NOW or recently. This is the primary high temp window. Current temp may BE the high.'; }
-  else if(localHour < 19){ phase='LATE AFTERNOON'; todayStatus='Today high LIKELY ALREADY SET. Post-peak cooling typically underway. Verify if live high stopped climbing.'; }
-  else if(localHour < 21){ phase='EVENING'; todayStatus='Today high ALMOST CERTAINLY SET. Focus analysis on tomorrow.'; }
-  else{ phase='NIGHT'; todayStatus='Today high IS SET and final. Do NOT analyze today trajectory - it is over. Focus entirely on tomorrow.'; }
-  return 'Local Time: '+timeStr+' ('+phase+')\nDate: '+dateStr+'\nToday High Status: '+todayStatus+'\n';
-})() +
+  let phase, todayStatus;
+  if(localHour < 6){ phase='PRE-DAWN'; todayStatus='Today high NOT YET SET. Peak heating 5-8 hours away.'; }
+  else if(localHour < 10){ phase='MORNING'; todayStatus='Today high NOT YET SET. Peak likely 2-6 hours away.'; }
+  else if(localHour < 13){ phase='MID-MORNING'; todayStatus='Today high NOT YET SET. Peak likely 1-3 hours away.'; }
+  else if(localHour < 16){ phase='PEAK HEATING'; todayStatus='Today high IS BEING SET NOW. Current temp may BE the high.'; }
+  else if(localHour < 19){ phase='LATE AFTERNOON'; todayStatus='Today high LIKELY ALREADY SET. Post-peak cooling underway.'; }
+  else if(localHour < 21){ phase='EVENING'; todayStatus='Today high ALMOST CERTAINLY SET. Focus on tomorrow.'; }
+  else{ phase='NIGHT'; todayStatus='Today high IS FINAL. Do NOT discuss today trajectory. Focus entirely on tomorrow.'; }
+  timeContext = '=== TIME CONTEXT ===\nLocal Time: '+timeStr+' ('+phase+')\nDate: '+dateStr+'\nToday High Status: '+todayStatus+'\n\n';
+})();
 '=== LIVE DATA ===\n' +
 'Live Wethr High (NWS logic): '+(liveHigh&&liveHigh.wethr_high!=null?liveHigh.wethr_high:'N/A')+'F\n' +
 'TEMP (MT - official METAR, authoritative): '+(obs&&obs.temperature_display?Math.round(obs.temperature_display):'N/A')+'F\n' +
