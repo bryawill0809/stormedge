@@ -301,8 +301,9 @@ function roundTemp(v){ return v != null ? Math.round(parseFloat(v)) : null; }
 async function wethr(file, params){
   const qs = new URLSearchParams({_file: file, ...params}).toString();
   const r = await fetch('/.netlify/functions/wethr?' + qs);
-  const json = await r.json();
-  if(json.error) throw new Error(json.error);
+  let json;
+  try { json = await r.json(); } catch(e) { throw new Error('JSON parse error: ' + e.message); }
+  if(!r.ok || json.error) throw new Error(json.error || 'HTTP ' + r.status);
   return json;
 }
 
@@ -388,7 +389,7 @@ async function loadData(){
       wethr('observations.php', {station_code: station.code, mode: 'wethr_high', logic: 'nws'}).catch(e => { console.warn('FAIL liveHigh:', e.message); return null; }),
       wethr('observations.php', {station_code: station.code, mode: 'wethr_high', logic: 'wu'}).catch(e => { console.warn('FAIL wuHigh:', e.message); return null; }),
       wethr('observations.php', {station_code: station.code, mode: 'latest'}).catch(e => { console.warn('FAIL latestObs:', e.message); return null; }),
-      wethr('observations.php', {station_code: station.code, mode: 'latest_1min'}).catch(e => { console.warn('FAIL obs1min:', e.message); return null; }),
+      wethr('observations.php', {station_code: station.code, mode: 'latest', precision: '1min'}).catch(e => { console.warn('FAIL obs1min:', e.message); return null; }),
       wethr('nws_forecasts.php', {station_code: station.code, date: today, mode: 'latest'}).catch(e => { console.warn('FAIL todayFcst:', e.message); return null; }),
       wethr('nws_forecasts.php', {station_code: station.code, date: tomorrow, mode: 'latest'}).catch(e => { console.warn('FAIL tomorrowFcst:', e.message); return null; }),
       wethr('nws_forecasts.php', {station_code: station.code, date: today, mode: 'history'}).catch(e => { console.warn('FAIL history:', e.message); return null; }),
