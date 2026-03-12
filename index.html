@@ -122,14 +122,38 @@ html,body{background:#07090d;color:#e8f0f8;font-family:'Barlow',sans-serif;min-h
 .obs-1m{background:rgba(91,200,255,.1);color:var(--ice);border:1px solid rgba(91,200,255,.2)}
 .section-head{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:#4da6ff;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .section-head::after{content:'';flex:1;height:1px;background:var(--bd)}
+
+/* PASSWORD GATE */
+.gate{position:fixed;inset:0;background:#07090d;z-index:99999;display:flex;align-items:center;justify-content:center}
+.gate-box{background:#0d1520;border:1px solid rgba(0,255,200,0.2);padding:48px 40px;width:320px;text-align:center}
+.gate-logo{font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;color:#fff;letter-spacing:4px;margin-bottom:4px}
+.gate-logo em{color:var(--acid);font-style:normal}
+.gate-sub{font-family:var(--mono);font-size:9px;color:#4da6ff;letter-spacing:3px;margin-bottom:32px}
+.gate-label{font-family:var(--mono);font-size:9px;color:#4da6ff;letter-spacing:2px;text-align:left;margin-bottom:8px}
+.gate-input{width:100%;background:#07090d;border:1px solid rgba(0,255,200,0.25);color:#fff;font-family:var(--mono);font-size:14px;padding:10px 12px;outline:none;box-sizing:border-box;letter-spacing:2px}
+.gate-input:focus{border-color:var(--acid)}
+.gate-btn{width:100%;margin-top:12px;background:var(--acid);color:#000;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:3px;padding:11px;border:none;cursor:pointer;transition:opacity .2s}
+.gate-btn:hover{opacity:0.85}
+.gate-err{font-family:var(--mono);font-size:10px;color:var(--fire);margin-top:10px;min-height:16px;letter-spacing:1px}
 </style>
 </head>
 <body>
+<div class="gate" id="gate">
+  <div class="gate-box">
+    <div class="gate-logo">CASH<em>CAST</em></div>
+    <div class="gate-sub">HIGH TEMP BETTING INTELLIGENCE</div>
+    <div class="gate-label">ACCESS CODE</div>
+    <input class="gate-input" type="password" id="gate-input" placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;" autocomplete="off" />
+    <button class="gate-btn" onclick="checkPassword()">ENTER &#8594;</button>
+    <div class="gate-err" id="gate-err"></div>
+  </div>
+</div>
+
 <div class="wrap">
 
   <!-- HEADER -->
   <div class="hdr">
-    <div class="logo">STORM<em>EDGE</em><div style="font-family:var(--mono);font-size:9px;color:var(--mut);letter-spacing:2px;margin-top:2px">HIGH TEMP BETTING INTELLIGENCE</div></div>
+    <div class="logo">CASH<em>CAST</em><div style="font-family:var(--mono);font-size:9px;color:#4da6ff;letter-spacing:2px;margin-top:2px">HIGH TEMP BETTING INTELLIGENCE</div></div>
     <div class="hdr-right">
       <span class="update-time" id="update-time"></span>
       <button class="btn" id="refresh-btn" onclick="loadData()">&#8635; REFRESH</button>
@@ -266,6 +290,36 @@ html,body{background:#07090d;color:#e8f0f8;font-family:'Barlow',sans-serif;min-h
 </div>
 
 <script>
+// ━━ ACCESS CONTROL ━━
+// Change this to set your password:
+const ACCESS_PASSWORD = 'cashcast2026';
+
+function checkPassword(){
+  const val = document.getElementById('gate-input').value;
+  if(val === ACCESS_PASSWORD){
+    sessionStorage.setItem('cc_auth','1');
+    document.getElementById('gate').style.display='none';
+    loadData();
+  } else {
+    const err = document.getElementById('gate-err');
+    err.textContent = 'INCORRECT ACCESS CODE';
+    document.getElementById('gate-input').value='';
+    document.getElementById('gate-input').focus();
+    setTimeout(()=>{ err.textContent=''; }, 2000);
+  }
+}
+
+// Allow Enter key
+document.addEventListener('DOMContentLoaded', ()=>{
+  const inp = document.getElementById('gate-input');
+  if(inp) inp.addEventListener('keydown', e=>{ if(e.key==='Enter') checkPassword(); });
+  // Check if already authenticated this session
+  if(sessionStorage.getItem('cc_auth')==='1'){
+    document.getElementById('gate').style.display='none';
+    loadData();
+  }
+});
+
 const STATIONS = [
   {code:"KLAX",tz:"America/Los_Angeles",name:"Los Angeles",climate:"Marine layer is THE dominant factor. Burn-off timing (10am-1pm) determines the high. Late burn-off = UNDER, early = OVER. WIND CAP RULE: When winds turn WESTERLY (240-300 deg) at 7+ mph, heating stalls and temp caps near current reading — this is the single strongest UNDER signal at LAX. Offshore/easterly flow (50-120 deg) = no marine influence = OVER. NWS LOX conservative on offshore flow days. Santa Ana events (NE 30-120 deg, low dew point) can spike 10-15F above forecast."},
   {code:"KATL",tz:"America/New_York",name:"Atlanta",climate:"Elevated terrain (1050ft) means highs run 3-5F lower than surrounding lowlands. WIND CAP RULE: N/NE flow (330-60 deg) brings cooler continental air that caps heating 4-7F below forecast. SW flow is the heating driver — expect OVER on sustained SW. Afternoon convection (Jun-Aug) frequently ends pacing before peak — high often set pre-noon. NWS FFC reliable."},
@@ -913,11 +967,9 @@ pacingTable+'\n\n' +
 
 // INIT
 buildStationList('');
-loadData();
+// loadData() is called by gate after auth;
 setInterval(loadData, 5*60*1000);
 </script>
 </body>
 </html>
-
-
 
