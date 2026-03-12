@@ -574,33 +574,8 @@ async function loadData(){
 
 async function runAI(station, liveHigh, obs, obs1min, todayFcst, tomorrowFcst, models, history){
   const histVer = history && history.forecasts ? history.forecasts.slice(-6).map(v=>({v:v.version,high:v.high})) : null;
-  let timeContext = '';
 
-  // Build pacing table: for each hour offset, show all model temps side by side
-  let pacingTable = '';
-  if(models.length > 0){
-    const allHours = [...new Set(models.flatMap(m=>m.pacing.map(p=>p[0])))].sort((a,b)=>a-b);
-    const header = 'HR  | ' + models.map(m=>m.model.padEnd(10)).join(' | ');
-    const rows = allHours.map(hr=>{
-      const vals = models.map(m=>{
-        const pt = m.pacing.find(p=>p[0]===hr);
-        return pt ? String(pt[1]).padEnd(10) : '?'.padEnd(10);
-      });
-      return String(hr).padStart(3)+' | '+vals.join(' | ');
-    });
-    pacingTable = header + '\n' + rows.join('\n');
-  }
-
-  // Model peak summary
-  const modelPeaks = models.map(m=>m.model+':'+m.high+'F').join(', ');
-  const modelMean = models.length ? Math.round(models.reduce((a,m)=>a+m.high,0)/models.length) : null;
-  const modelSpread = models.length ? Math.max(...models.map(m=>m.high))-Math.min(...models.map(m=>m.high)) : null;
-
-  const prompt = timeContext +
-'You are a forensic meteorologist specializing in temperature betting markets (Kalshi/Wethr.net). You have deep expertise in the specific micro-climate of this station.\n\n' +
-'STATION: '+station.name+' ('+station.code+') | DATE: '+getToday()+'\n\n' +
-'=== STATION CLIMATE INTELLIGENCE ===\n'+station.climate+'\n\n' +
-(function(){
+  // Time context
   const now = new Date();
   const localHour = now.getHours();
   const timeStr = now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
@@ -612,36 +587,69 @@ async function runAI(station, liveHigh, obs, obs1min, todayFcst, tomorrowFcst, m
   else if(localHour < 16){ phase='PEAK HEATING'; todayStatus='Today high IS BEING SET NOW. Current temp may BE the high.'; }
   else if(localHour < 19){ phase='LATE AFTERNOON'; todayStatus='Today high LIKELY ALREADY SET. Post-peak cooling underway.'; }
   else if(localHour < 21){ phase='EVENING'; todayStatus='Today high ALMOST CERTAINLY SET. Focus on tomorrow.'; }
-  else{ phase='NIGHT'; todayStatus='Today high IS FINAL. Do NOT discuss today trajectory. Focus entirely on tomorrow.'; }
-  timeContext = '=== TIME CONTEXT ===\nLocal Time: '+timeStr+' ('+phase+')\nDate: '+dateStr+'\nToday High Status: '+todayStatus+'\n\n';
-})();
-'=== LIVE DATA ===\n' +
-'Live Wethr High (NWS logic): '+(liveHigh&&liveHigh.wethr_high!=null?liveHigh.wethr_high:'N/A')+'F\n' +
-'TEMP (MT - official METAR, authoritative): '+(obs&&obs.temperature_display?Math.round(obs.temperature_display):'N/A')+'F\n' +
-'TEMP (1MIN - ASOS sub-hourly, leading indicator): '+(obs1min&&obs1min.temperature_display?Math.round(obs1min.temperature_display):'N/A')+'F\n' +
-'NOTE: MT temp is rounded to whole degrees and is the official reading used for high temp settlement. 1MIN is decimal precision and updates more frequently but can be noisier. When 1MIN > MT, temps may be rising between METAR obs.\n' +
-'Dew Point: '+(obs&&obs.dew_point!=null?Math.round(parseFloat(obs.dew_point)):'N/A')+'F | RH: '+(obs&&obs.relative_humidity?Math.round(obs.relative_humidity):'N/A')+'%\n' +
-'Wind: '+(obs&&obs.wind_direction?obs.wind_direction:'N/A')+' '+(obs&&obs.wind_speed?Math.round(parseFloat(obs.wind_speed)):'N/A')+'kt'+(obs&&obs.wind_gust?' Gust '+ Math.round(parseFloat(obs.wind_gust))+'kt':'')+'\n' +
-'Visibility: '+(obs&&obs.visibility?obs.visibility:'N/A')+' mi | Altimeter: '+(obs&&obs.altimeter?parseFloat(obs.altimeter).toFixed(2):'N/A')+'"\n\n' +
+  else { phase='NIGHT'; todayStatus='Today high IS FINAL. Do NOT discuss today trajectory. Focus entirely on tomorrow.'; }
+  const timeContext = 'TIME: '+timeStr+' LOCAL ('+phase+') | '+dateStr+'\nTODAY STATUS: '+todayStatus;
+
+  // Model summary
+  const modelPeaks = models.length ? models.map(m=>m.model+':'+m.high+'F').join(', ') : 'N/A';
+  const modelMean = models.length ? Math.round(models.reduce((a,m)=>a+m.high,0)/models.length) : null;
+  const modelSpread = models.length ? Math.max(...models.map(m=>m.high))-Math.min(...models.map(m=>m.high)) : null;
+
+  // Pacing table
+  let pacingTable = 'N/A';
+  if(models.length > 0){
+    const allHours = [...new Set(models.flatMap(m=>m.pacing.map(p=>p[0])))].sort((a,b)=>a-b);
+    const header = 'HR  | ' + models.map(m=>m.model.padEnd(10)).join(' | ');
+    const rows = allHours.map(hr=>{
+      const vals = models.map(m=>{ const pt=m.pacing.find(p=>p[0]===hr); return pt?String(pt[1]).padEnd(10):'?'.padEnd(10); });
+      return String(hr).padStart(3)+' | '+vals.join(' | ');
+    });
+    pacingTable = header+'\n'+rows.join('\n');
+  }
+
+  // Obs values
+  const mtTemp = obs ? roundTemp(obs.temperature_display) : null;
+  const m1Temp = obs1min ? roundTemp(obs1min.temperature_display) : null;
+  const dewPt = obs && obs.dew_point != null ? Math.round(parseFloat(obs.dew_point)) : 'N/A';
+  const rh = obs && obs.relative_humidity ? Math.round(obs.relative_humidity) : 'N/A';
+  const windDir = obs && obs.wind_direction ? obs.wind_direction : 'N/A';
+  const windSpd = obs && obs.wind_speed ? Math.round(parseFloat(obs.wind_speed)) : 'N/A';
+  const windGust = obs && obs.wind_gust ? Math.round(parseFloat(obs.wind_gust)) : null;
+  const vis = obs && obs.visibility ? obs.visibility : 'N/A';
+  const altim = obs && obs.altimeter ? parseFloat(obs.altimeter).toFixed(2) : 'N/A';
+  const slp = obs && obs.sea_level_pressure ? parseFloat(obs.sea_level_pressure).toFixed(1) : 'N/A';
+
+  const prompt =
+'You are a forensic meteorologist for temperature betting markets (Kalshi/Wethr.net).\n' +
+'STATION: '+station.name+' ('+station.code+') | DATE: '+getToday()+'\n\n' +
+'=== TIME CONTEXT (CRITICAL) ===\n' + timeContext + '\n\n' +
+'=== STATION CLIMATE INTELLIGENCE ===\n' + station.climate + '\n\n' +
+'=== LIVE OBSERVATIONS ===\n' +
+'Live Wethr High (NWS): '+(liveHigh&&liveHigh.wethr_high!=null?liveHigh.wethr_high:'N/A')+'F\n' +
+'Temp MT (official METAR, settlement basis): '+(mtTemp!=null?mtTemp:'N/A')+'F\n' +
+'Temp 1MIN (ASOS leading indicator): '+(m1Temp!=null?m1Temp:'N/A')+'F\n' +
+'Dew Point: '+dewPt+'F | RH: '+rh+'%\n' +
+'Wind: '+windDir+' '+windSpd+'kt'+(windGust?' Gust '+windGust+'kt':'')+'\n' +
+'Visibility: '+vis+' mi | Altimeter: '+altim+'" | SLP: '+slp+'mb\n\n' +
 '=== NWS FORECASTS ===\n' +
-'Today High: '+(todayFcst&&todayFcst.high!=null?todayFcst.high:'N/A')+'F (version '+( todayFcst?todayFcst.version:'?')+')\n' +
-'Tomorrow High: '+(tomorrowFcst&&tomorrowFcst.high!=null?tomorrowFcst.high:'N/A')+'F (version '+(tomorrowFcst?tomorrowFcst.version:'?')+')\n' +
-'Today Hourly NWS: '+(todayFcst&&todayFcst.hourly_temps?todayFcst.hourly_temps.map((t,i)=>i+':'+t).filter(s=>!s.endsWith('null')).join(', '):'N/A')+'\n' +
-'Tomorrow Hourly NWS: '+(tomorrowFcst&&tomorrowFcst.hourly_temps?tomorrowFcst.hourly_temps.map((t,i)=>i+':'+t).filter(s=>!s.endsWith('null')).join(', '):'N/A')+'\n\n' +
+'Today High: '+(todayFcst&&todayFcst.high!=null?todayFcst.high:'N/A')+'F (v'+(todayFcst?todayFcst.version:'?')+')\n' +
+'Tomorrow High: '+(tomorrowFcst&&tomorrowFcst.high!=null?tomorrowFcst.high:'N/A')+'F (v'+(tomorrowFcst?tomorrowFcst.version:'?')+')\n' +
+'Today Hourly: '+(todayFcst&&todayFcst.hourly_temps?todayFcst.hourly_temps.map((t,i)=>i+'h:'+t+'F').filter(s=>!s.includes('null')).join(' '):'N/A')+'\n' +
+'Tomorrow Hourly: '+(tomorrowFcst&&tomorrowFcst.hourly_temps?tomorrowFcst.hourly_temps.map((t,i)=>i+'h:'+t+'F').filter(s=>!s.includes('null')).join(' '):'N/A')+'\n\n' +
 '=== FORECAST VERSION DRIFT ===\n' +
-(histVer?histVer.map(v=>'v'+v.v+': '+v.high+'F').join(' -> '):'N/A')+'\n\n' +
+(histVer?histVer.map(v=>'v'+v.v+':'+v.high+'F').join(' -> '):'N/A')+'\n\n' +
 '=== MODEL CONSENSUS (PEAK HIGH) ===\n' +
-modelPeaks+(modelMean?'\nMean: '+modelMean+'F | Spread: '+modelSpread+'F':'')+'\n\n' +
-'=== FULL MODEL PACING (hours from now -> temp) ===\n' +
-(pacingTable||'N/A')+'\n\n' +
-'CRITICAL INSTRUCTION: The TIME CONTEXT section above tells you exactly where we are in the day. If it says today high IS SET or ALMOST CERTAINLY SET - do NOT discuss today trajectory as if it can still move. Instead confirm what the final high was and pivot entirely to tomorrow analysis. If it says NOT YET SET - analyze the trajectory normally.\n\n' +
-'Analyze ALL data above using your station climate knowledge. Provide sharp betting intelligence:\n' +
-'## TODAY HIGH - State whether high is FINAL or STILL BEING SET. If final, confirm the number. If still active, analyze trajectory.\n' +
-'## TOMORROW HIGH - Best projection synthesizing NWS + all model pacing curves. Where do models agree/diverge?\n' +
-'## PACING ANALYSIS - Which model is pacing hottest/coldest? Are models accelerating or plateauing? What does the shape of the curves suggest about the eventual high?\n' +
-'## STATION FACTORS - How do this station\'s specific climate quirks affect the forecast today?\n' +
-'## BETTING EDGE - OVER or UNDER on tomorrow high line. Be direct and give your confidence level.\n' +
-'## RISK FLAGS - What could invalidate this call?';
+'Peaks: '+modelPeaks+'\n' +
+(modelMean?'Mean: '+modelMean+'F | Spread: '+modelSpread+'F\n':'')+'\n' +
+'=== FULL MODEL PACING (hours from now) ===\n' +
+pacingTable+'\n\n' +
+'INSTRUCTION: Honor the TIME CONTEXT. If today high is FINAL/SET - confirm the number, skip trajectory. Focus on tomorrow.\n\n' +
+'## TODAY HIGH - FINAL or STILL ACTIVE?\n' +
+'## TOMORROW HIGH - Projection + range from all model pacing curves.\n' +
+'## PACING ANALYSIS - Hottest/coldest model, curve shapes, acceleration vs plateau.\n' +
+'## STATION FACTORS - How do this station\'s climate quirks affect today\'s setup?\n' +
+'## BETTING EDGE - OVER or UNDER with confidence level.\n' +
+'## RISK FLAGS - What invalidates this call?';
 
   try {
     const r = await fetch('/.netlify/functions/claude', {
@@ -650,7 +658,7 @@ modelPeaks+(modelMean?'\nMean: '+modelMean+'F | Spread: '+modelSpread+'F':'')+'\
       body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:1500, messages:[{role:'user',content:prompt}]})
     });
     const d = await r.json();
-    console.log('Claude response status:', r.status, 'body:', JSON.stringify(d).slice(0,200));
+    console.log('Claude status:', r.status, JSON.stringify(d).slice(0,150));
     if(d.error){ throw new Error(typeof d.error==='string'?d.error:JSON.stringify(d.error)); }
     const text = d.content ? d.content.map(b=>b.text||'').join('\n') : '';
     const html = text
@@ -660,8 +668,15 @@ modelPeaks+(modelMean?'\nMean: '+modelMean+'F | Spread: '+modelSpread+'F':'')+'\
     setHTML('analysis-body', html);
     el('analysis-body').className = 'analysis-body';
 
-    // Structured bet signal
-    const betPrompt = 'Weather for '+station.name+': today NWS high '+(todayFcst&&todayFcst.high?todayFcst.high:'?')+'F v'+(todayFcst?todayFcst.version:'?')+', tomorrow '+(tomorrowFcst&&tomorrowFcst.high?tomorrowFcst.high:'?')+'F v'+(tomorrowFcst?tomorrowFcst.version:'?')+', live high '+(liveHigh&&liveHigh.wethr_high?liveHigh.wethr_high:'?')+'F, model peaks: '+modelPeaks+', model mean: '+(modelMean||'?')+'F, spread: '+(modelSpread||'?')+'F, version drift: '+(histVer?histVer.map(v=>'v'+v.v+':'+v.high).join(','):'N/A')+'.\nStation climate note: '+station.climate.slice(0,200)+'\nReturn ONLY valid JSON, no markdown: {"tomorrowProjectedHigh":number,"tomorrowRangeLow":number,"tomorrowRangeHigh":number,"tomorrowConfidence":number,"trendDirection":"UP|DOWN|FLAT","betSide":"OVER|UNDER|PASS","betEdge":"STRONG|MODERATE|WEAK","betNote":"one sentence"}';
+    // Bet signal
+    const betPrompt =
+'Station: '+station.name+' | '+timeContext+'\n' +
+'Today NWS: '+(todayFcst&&todayFcst.high?todayFcst.high:'?')+'F v'+(todayFcst?todayFcst.version:'?')+
+' | Tomorrow: '+(tomorrowFcst&&tomorrowFcst.high?tomorrowFcst.high:'?')+'F v'+(tomorrowFcst?tomorrowFcst.version:'?')+'\n' +
+'Live High: '+(liveHigh&&liveHigh.wethr_high?liveHigh.wethr_high:'?')+'F | MT: '+(mtTemp!=null?mtTemp:'?')+'F\n' +
+'Models: '+modelPeaks+(modelMean?' | Mean: '+modelMean+'F | Spread: '+modelSpread+'F':'')+'\n' +
+'Drift: '+(histVer?histVer.map(v=>'v'+v.v+':'+v.high).join(','):'N/A')+'\n' +
+'Return ONLY valid JSON no markdown: {"tomorrowProjectedHigh":number,"tomorrowRangeLow":number,"tomorrowRangeHigh":number,"tomorrowConfidence":number,"trendDirection":"UP|DOWN|FLAT","betSide":"OVER|UNDER|PASS","betEdge":"STRONG|MODERATE|WEAK","betNote":"one sentence"}';
 
     const br = await fetch('/.netlify/functions/claude', {
       method: 'POST',
@@ -702,7 +717,7 @@ modelPeaks+(modelMean?'\nMean: '+modelMean+'F | Spread: '+modelSpread+'F':'')+'\
   }
 }
 
-// \u2500\u2500 INIT \u2500\u2500
+// INIT
 buildStationList('');
 loadData();
 setInterval(loadData, 5*60*1000);
