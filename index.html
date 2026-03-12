@@ -598,6 +598,24 @@ async function runAI(station, liveHigh, obs, obs1min, todayFcst, tomorrowFcst, m
   const prompt = 'You are a forensic meteorologist specializing in temperature betting markets (Kalshi/Wethr.net). You have deep expertise in the specific micro-climate of this station.\n\n' +
 'STATION: '+station.name+' ('+station.code+') | DATE: '+getToday()+'\n\n' +
 '=== STATION CLIMATE INTELLIGENCE ===\n'+station.climate+'\n\n' +
+'=== TIME CONTEXT ===\n' +
+(function(){
+  const now = new Date();
+  const localHour = now.getHours();
+  const localMin = now.getMinutes();
+  const timeStr = now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const dateStr = now.toLocaleDateString([],{weekday:'long',month:'short',day:'numeric'});
+  let phase = '';
+  let todayStatus = '';
+  if(localHour < 6){ phase='PRE-DAWN'; todayStatus='Today high NOT YET SET. Early morning - peak heating hours still 5-8 hours away.'; }
+  else if(localHour < 10){ phase='MORNING'; todayStatus='Today high NOT YET SET. Morning warming phase beginning. Peak likely 2-6 hours away.'; }
+  else if(localHour < 13){ phase='MID-MORNING'; todayStatus='Today high NOT YET SET. Approaching peak heating window. High likely within 1-3 hours.'; }
+  else if(localHour < 16){ phase='PEAK HEATING'; todayStatus='Today high IS BEING SET NOW or recently. This is the primary high temp window. Current temp may BE the high.'; }
+  else if(localHour < 19){ phase='LATE AFTERNOON'; todayStatus='Today high LIKELY ALREADY SET. Post-peak cooling typically underway. Verify if live high stopped climbing.'; }
+  else if(localHour < 21){ phase='EVENING'; todayStatus='Today high ALMOST CERTAINLY SET. Focus analysis on tomorrow.'; }
+  else{ phase='NIGHT'; todayStatus='Today high IS SET and final. Do NOT analyze today trajectory - it is over. Focus entirely on tomorrow.'; }
+  return 'Local Time: '+timeStr+' ('+phase+')\nDate: '+dateStr+'\nToday High Status: '+todayStatus+'\n';
+})() +
 '=== LIVE DATA ===\n' +
 'Live Wethr High (NWS logic): '+(liveHigh&&liveHigh.wethr_high!=null?liveHigh.wethr_high:'N/A')+'F\n' +
 'TEMP (MT - official METAR, authoritative): '+(obs&&obs.temperature_display?Math.round(obs.temperature_display):'N/A')+'F\n' +
@@ -617,8 +635,9 @@ async function runAI(station, liveHigh, obs, obs1min, todayFcst, tomorrowFcst, m
 modelPeaks+(modelMean?'\nMean: '+modelMean+'F | Spread: '+modelSpread+'F':'')+'\n\n' +
 '=== FULL MODEL PACING (hours from now -> temp) ===\n' +
 (pacingTable||'N/A')+'\n\n' +
+'CRITICAL INSTRUCTION: The TIME CONTEXT section above tells you exactly where we are in the day. If it says today high IS SET or ALMOST CERTAINLY SET - do NOT discuss today trajectory as if it can still move. Instead confirm what the final high was and pivot entirely to tomorrow analysis. If it says NOT YET SET - analyze the trajectory normally.\n\n' +
 'Analyze ALL data above using your station climate knowledge. Provide sharp betting intelligence:\n' +
-'## TODAY HIGH - Current trajectory, pacing vs NWS forecast, is it locked or still moving?\n' +
+'## TODAY HIGH - State whether high is FINAL or STILL BEING SET. If final, confirm the number. If still active, analyze trajectory.\n' +
 '## TOMORROW HIGH - Best projection synthesizing NWS + all model pacing curves. Where do models agree/diverge?\n' +
 '## PACING ANALYSIS - Which model is pacing hottest/coldest? Are models accelerating or plateauing? What does the shape of the curves suggest about the eventual high?\n' +
 '## STATION FACTORS - How do this station\'s specific climate quirks affect the forecast today?\n' +
