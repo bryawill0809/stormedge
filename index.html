@@ -368,6 +368,13 @@ async function loadData(){
   btn.innerHTML = '<span class="spin">\u27F3</span>';
   hide('error-box'); hide('warn-box');
   hide('bet-banner'); hide('models-section'); hide('hourly-section'); hide('drift-section');
+  // Clear ALL display fields to prevent stale data from previous station showing
+  setText('live-high', '\u2014\u00B0'); setText('live-sub', 'Loading\u2026');
+  hide('high-time');
+  setText('today-high', '\u2014\u00B0'); setText('today-sub', 'No forecast yet');
+  setText('tomorrow-high', '\u2014\u00B0'); setText('tomorrow-sub', 'No forecast yet');
+  el('conditions-grid').innerHTML = '';
+  el('conditions-meta').innerHTML = '';
   setText('analysis-body', ''); el('analysis-body').className = 'loading';
   setHTML('analysis-body', 'Fetching weather data\u2026');
 
@@ -431,9 +438,13 @@ async function loadData(){
     const obsSource = obs1min ? '1m' : 'mt';
     if(latestObs || obs1min){
       const windDir = latestObs && latestObs.wind_direction ? latestObs.wind_direction : '—';
-      const windSpd = latestObs && latestObs.wind_speed ? Math.round(parseFloat(latestObs.wind_speed)) : '—';
-      const windGust = latestObs && latestObs.wind_gust ? Math.round(parseFloat(latestObs.wind_gust)) : null;
-      const dewPt = latestObs && latestObs.dew_point != null ? Math.round(parseFloat(latestObs.dew_point)) : '—';
+      const windSpdRaw = latestObs && latestObs.wind_speed ? parseFloat(latestObs.wind_speed) : null;
+      const windSpd = windSpdRaw != null ? Math.round(windSpdRaw * 1.15078) : '—';
+      const windGustRaw = latestObs && latestObs.wind_gust ? parseFloat(latestObs.wind_gust) : null;
+      const windGust = (windGustRaw != null && windGustRaw > 0) ? Math.round(windGustRaw * 1.15078) : null;
+      const dewRawUI = latestObs && latestObs.dew_point != null ? parseFloat(latestObs.dew_point) : null;
+      // API returns dew point in Celsius — convert to Fahrenheit
+      const dewPt = dewRawUI != null ? Math.round(dewRawUI * 9/5 + 32) : '—';
       const rh = latestObs && latestObs.relative_humidity ? Math.round(latestObs.relative_humidity) : '—';
       const vis = latestObs && latestObs.visibility ? latestObs.visibility : '—';
       const slp = latestObs && latestObs.sea_level_pressure ? parseFloat(latestObs.sea_level_pressure).toFixed(1) : '—';
@@ -447,7 +458,7 @@ async function loadData(){
         {label:'TEMP (MT)', val: (mtTemp||'—')+'°F', sub: 'Official METAR', badge:'mt'},
         {label:'TEMP (1MIN)', val: (m1Temp||'—')+'°F', sub: tempDiffStr ? 'vs MT: '+tempDiffStr : 'Sub-hourly ASOS', badge:'1m'},
         {label:'DEW POINT', val: dewPt+'°F', sub: 'RH: '+rh+'%', badge:null},
-        {label:'WIND', val: windDir+' '+Math.round(windSpd*1.15078)+'mph', sub: windGust ? 'Gust: '+Math.round(windGust*1.15078)+'mph' : 'No gust', badge:null},
+                {label:'WIND', val: windDir+' '+windSpd+'mph', sub: windGust ? 'Gust: '+windGust+'mph' : 'No gust', badge:null},
         {label:'VISIBILITY', val: vis+' mi', sub: 'Surface', badge:null},
         {label:'ALTIMETER', val: altim+'"', sub: 'SLP: '+slp+'mb', badge:null},
       ];
@@ -633,14 +644,15 @@ async function runAI(station, liveHigh, wuHigh, obs, obs1min, todayFcst, tomorro
   const mtTemp = obs ? roundTemp(obs.temperature_display) : null;
   const m1Temp = obs1min ? roundTemp(obs1min.temperature_display) : null;
   // API returns wind in knots — convert to MPH (1 kt = 1.15078 mph)
-  const dewRaw = obs ? (obs.dew_point != null ? obs.dew_point : null) : null;
-  const dewPt = dewRaw != null ? parseFloat(dewRaw).toFixed(1) : 'N/A';
+  const dewRawC = obs && obs.dew_point != null ? parseFloat(obs.dew_point) : null;
+  // API returns dew point in Celsius — convert to Fahrenheit
+  const dewPt = dewRawC != null ? (dewRawC * 9/5 + 32).toFixed(1) : 'N/A';
   const rh = obs && obs.relative_humidity ? Math.round(obs.relative_humidity) : 'N/A';
   const windDir = obs && obs.wind_direction ? obs.wind_direction : 'N/A';
   const windSpdKt = obs && obs.wind_speed ? parseFloat(obs.wind_speed) : null;
   const windGustKt = obs && obs.wind_gust ? parseFloat(obs.wind_gust) : null;
   const windSpd = windSpdKt != null ? Math.round(windSpdKt * 1.15078) : 'N/A';
-  const windGust = windGustKt != null ? Math.round(windGustKt * 1.15078) : null;
+  const windGust = (windGustKt != null && windGustKt > 0) ? Math.round(windGustKt * 1.15078) : null;
   const vis = obs && obs.visibility ? obs.visibility : 'N/A';
   const altim = obs && obs.altimeter ? parseFloat(obs.altimeter).toFixed(2) : 'N/A';
   const slp = obs && obs.sea_level_pressure ? parseFloat(obs.sea_level_pressure).toFixed(1) : 'N/A';
