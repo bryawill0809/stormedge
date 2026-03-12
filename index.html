@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -151,7 +150,7 @@ html,body{background:#07090d;color:#d0dde8;font-family:'Barlow',sans-serif;min-h
   <!-- STATS -->
   <div class="stats">
     <div class="stat acid stat-main">
-      <div class="stat-label">Live Running High &middot; NWS Logic</div>
+      <div class="stat-label">Live Running High &middot; WU / NWS</div>
       <div class="stat-val stat-big" id="live-high" style="color:var(--acid);animation:glow 3s ease-in-out infinite">&mdash;&deg;</div>
       <div class="stat-info" id="live-sub">Loading&hellip;</div>
       <span class="chip" id="high-time" style="display:none"></span>
@@ -403,14 +402,21 @@ async function loadData(){
     if(liveHigh && liveHigh.wethr_high != null){
       const nwsH = liveHigh.wethr_high;
       const wuH = wuHigh && wuHigh.wethr_high != null ? wuHigh.wethr_high : null;
-      // Show WU high (finer resolution) as primary if available and higher
-      const displayHigh = (wuH != null && wuH > nwsH) ? wuH : nwsH;
+      // WU is primary (finer resolution, more current); NWS shown as reference
+      const displayHigh = wuH != null ? wuH : nwsH;
       setText('live-high', displayHigh + '\u00B0');
-      // Show both in subtitle
-      let highSub = 'NWS: ' + nwsH + '\u00B0F';
-      if(wuH != null) highSub += ' \u00B7 WU: ' + wuH + '\u00B0F';
-      if(liveHigh.time_of_high_utc){
-        const t = new Date(liveHigh.time_of_high_utc).toLocaleTimeString('en-US',{timeZone: station.tz, hour:'2-digit',minute:'2-digit'});
+      // Subtitle: MT temp + source breakdown
+      const mtDisp = latestObs && latestObs.temperature_display ? Math.round(parseFloat(latestObs.temperature_display)) : null;
+      const rhDisp = latestObs && latestObs.relative_humidity ? Math.round(latestObs.relative_humidity) : null;
+      const subParts = [];
+      if(mtDisp != null) subParts.push('MT: ' + mtDisp + '\u00B0F');
+      if(rhDisp != null) subParts.push('RH: ' + rhDisp + '%');
+      setText('live-sub', subParts.join(' \u00B7 '));
+      // High-time line: show both WU and NWS values + set time
+      let highSub = wuH != null ? 'WU: ' + wuH + '\u00B0F \u00B7 NWS: ' + nwsH + '\u00B0F' : 'NWS: ' + nwsH + '\u00B0F';
+      const timeSource = wuHigh && wuHigh.time_of_high_utc ? wuHigh : liveHigh;
+      if(timeSource.time_of_high_utc){
+        const t = new Date(timeSource.time_of_high_utc).toLocaleTimeString('en-US',{timeZone: station.tz, hour:'2-digit',minute:'2-digit'});
         const tzA = new Date().toLocaleTimeString('en-US',{timeZone:station.tz,timeZoneName:'short'}).split(' ').pop();
         setText('high-time', highSub + ' \u00B7 SET ' + t + ' ' + tzA);
       } else {
@@ -664,8 +670,8 @@ async function runAI(station, liveHigh, wuHigh, obs, obs1min, todayFcst, tomorro
 '=== TIME CONTEXT (CRITICAL) ===\n' + timeContext + '\n\n' +
 '=== STATION CLIMATE INTELLIGENCE ===\n' + station.climate + '\n\n' +
 '=== LIVE OBSERVATIONS ===\n' +
-'Live Running High (NWS logic): '+(liveHigh&&liveHigh.wethr_high!=null?liveHigh.wethr_high:'N/A')+'F\n' +
-'Live Running High (WU logic, finer resolution): '+(wuHigh&&wuHigh.wethr_high!=null?wuHigh.wethr_high:'N/A')+'F\n' +
+'Live Running High (WU - primary, finer resolution): '+(wuHigh&&wuHigh.wethr_high!=null?wuHigh.wethr_high:'N/A')+'F\n' +
+'Live Running High (NWS - reference): '+(liveHigh&&liveHigh.wethr_high!=null?liveHigh.wethr_high:'N/A')+'F\n' +
 'Temp MT (official METAR, settlement basis): '+(mtTemp!=null?mtTemp:'N/A')+'F\n' +
 'Temp 1MIN (ASOS leading indicator): '+(m1Temp!=null?m1Temp:'N/A')+'F\n' +
 'Dew Point: '+dewPt+'F | RH: '+rh+'%\n' +
