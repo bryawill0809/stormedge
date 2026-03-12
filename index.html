@@ -241,34 +241,34 @@ html,body{background:#07090d;color:#d0dde8;font-family:'Barlow',sans-serif;min-h
 
 <script>
 const STATIONS = [
-  {code:"KNYC",name:"New York (Central Park)",climate:"Urban heat island effect inflates highs vs surrounding areas. Summer sea breeze can cap temps 5-8F below inland. NWS often underpredicts on SW flow days. Watch for late-day mixing that pushes highs past forecast. Winter inversions can trap cold air and suppress highs."},
-  {code:"KLGA",name:"New York (LaGuardia)",climate:"Coastal exposure means marine influence on hot days. Runway heat soak can artificially elevate obs in calm winds. Generally runs 2-4F warmer than KNYC on light wind days due to asphalt/concrete. Watch for sea breeze timing in summer."},
-  {code:"KBOS",name:"Boston",climate:"Strong marine influence - sea breeze frequently caps summer highs 8-12F below inland. Back-bay urban core can hold heat longer. NWS Boston historically conservative on high forecasts in summer. Onshore flow days are strong UNDER plays."},
-  {code:"KPHL",name:"Philadelphia",climate:"Urban heat corridor between NYC and DC. Minimal marine influence despite proximity to Delaware Bay. Hot air mass days see strong mixing - NWS often underpredicts highs by 2-4F on 850mb ridge days. One of the most reliable OVER stations in summer."},
-  {code:"KDCA",name:"Washington D.C.",climate:"Potomac River location creates humidity trap. Urban heat island among the strongest on East Coast. NWS WBC often conservative with highs. Watch 850mb temps - every 1C above normal adds ~1.5F to surface max. Notorious for exceeding forecast highs in heat waves."},
-  {code:"KCLT",name:"Charlotte",climate:"Piedmont location buffers from coastal marine influence. Afternoon thunderstorm threat can abruptly end high temp pacing. NWS GSP tends to be accurate. Urban heat growing with city expansion. Watch for elevated terrain influence dampening highs in NW flow."},
-  {code:"KATL",name:"Atlanta",climate:"Elevated terrain (1050ft) means highs run 3-5F lower than surrounding lowlands. Urban heat island significant. Afternoon convection frequently caps highs June-August - high temp often set before noon storms develop. NWS FFC reliable but storms create timing uncertainty."},
-  {code:"KMIA",name:"Miami",climate:"Sea breeze battle between Atlantic and Gulf sides is the dominant factor. High temp almost always set in late morning before sea breeze arrives 12-2pm. NWS MFL typically accurate. Summer highs are extremely consistent 88-92F range - low volatility market. Watch dry season (Nov-Apr) for higher spread days."},
-  {code:"KJAX",name:"Jacksonville",climate:"Inland enough to reduce marine influence vs Miami. More volatile than South Florida - 850mb temps matter more. Sea breeze typically arrives later (2-4pm) allowing higher max temps. Summer thunderstorm timing critical for high temp pacing."},
-  {code:"KMDW",name:"Chicago (Midway)",climate:"Urban location in SW Chicago runs 2-4F warmer than KORD. Lake Michigan influence weakest here - more continental. Wind direction critical: SW flow = no lake influence = higher highs. NE/E flow = lake air = strong UNDER. Check 925mb wind direction before betting."},
-  {code:"KORD",name:"Chicago (O'Hare)",climate:"NW suburban location is more exposed to lake breeze than KMDW on E/NE flow days. Lake Michigan effect can suppress highs 10-15F on onshore flow. SW flow days eliminate lake influence entirely. One of the highest variance stations - wind direction is everything."},
-  {code:"KDTW",name:"Detroit",climate:"Great Lakes influence moderate - Lake Erie/St Clair effects less dramatic than Chicago/Milwaukee. Urban heat island significant. Continental air mass patterns dominate spring/fall. NWS DTX generally reliable. Watch for strong W flow bringing Lake Michigan-modified air."},
-  {code:"KMSP",name:"Minneapolis",climate:"Deep continental location - no significant water body influence. Highly reactive to 850mb temperature anomalies. Spring/fall have highest variance. NWS MPX can underforecast on strong ridge days. Winter high temps heavily influenced by snow cover albedo."},
-  {code:"KBNA",name:"Nashville",climate:"Cumberland River valley location creates localized thermal patterns. Urban heat growing. No significant water body effects. NWS OHX generally accurate. Strong synoptic forcing days (heat domes) see consistent OVER performance. Watch for valley fog suppressing morning temps and delaying high."},
-  {code:"KMSY",name:"New Orleans",climate:"Lake Pontchartrain and Gulf proximity create persistent marine influence. High humidity means heat index often exceeds air temp. Actual high temp relatively constrained by moisture. Sea breeze timing important. NWS LIX accurate. Summer highs very consistent 90-95F."},
-  {code:"KOKC",name:"Oklahoma City",climate:"Classic continental location - highest temperature volatility of any major market. Dry line position is critical - can swing forecast 10F+ in either direction. NWS OUN sometimes misses on rapid warm/cool advection. Blue norther passages can drop highs dramatically. Best OVER plays on sustained SW flow."},
-  {code:"KDFW",name:"Dallas/Ft Worth",climate:"DFW airport exposure to SW flow is excellent. Urban heat island significant. Dry line dynamics create high forecast uncertainty on convective days. Summer heat dome days (July-Aug) are extremely reliable OVERs - NWS FWD conservative. 100F+ days come in streaks - momentum matters."},
-  {code:"KDAL",name:"Dallas (Love Field)",climate:"Urban core location runs 3-5F warmer than DFW on calm nights/mornings. Less exposed to airport wind effects. High temp pacing similar to DFW but slightly warmer on light wind days. Good proxy for urban heat vs airport comparison betting."},
-  {code:"KHOU",name:"Houston",climate:"Gulf moisture creates persistent humidity cap on temperatures - rarely exceeds 98F due to moisture. Sea breeze from Galveston Bay influences afternoon temps. Urban heat island significant. NWS HGX reliable. Summer is a LOW VARIANCE market - humidity constrains the range."},
-  {code:"KSAT",name:"San Antonio",climate:"Balcones Escarpment to the west creates interesting drainage flow patterns. Gulf moisture influence moderate. More volatile than Houston due to drier air mass potential. Can spike to 105F+ on strong SW flow with dry advection. NWS EWX can underforecast on exceptional heat days."},
-  {code:"KAUS",name:"Austin",climate:"Hill Country location slightly elevated. Growing urban heat island. Transitional zone between Gulf moisture and dry continental air - creates high variance. Cap/convergence zone nearby adds convective uncertainty. Strong OVER candidate on dry W/SW flow days. Watch moisture return timing."},
-  {code:"KDEN",name:"Denver",climate:"Mile-high elevation (5280ft) means temperatures run 15-20F lower than sea-level equivalents. Chinook winds can drive rapid warming - 20-30F rises possible in hours. Upslope flow suppresses highs dramatically. NWS BOU handles chinook well but upslope days have high uncertainty. Wind direction from W = warm, E = cold suppressed."},
-  {code:"KBKF",name:"Aurora (Buckley)",climate:"Slightly lower elevation than Denver proper. Air Force base location means good instrument maintenance. Similar chinook/upslope dynamics as KDEN but slightly more exposed to plains flow. Runs slightly warmer than KDEN on E flow days."},
-  {code:"KPHX",name:"Phoenix",climate:"Desert heat island - world's most extreme urban heat effect. Sky Harbor airport surrounded by asphalt amplifies heat. Monsoon season (Jul-Sep) is critical: moisture arrival CAPS highs at 100-105F vs dry season 110-118F potential. NWS PSR very accurate for dry conditions, monsoon onset timing is key uncertainty. Pre-monsoon (May-Jun) highest OVER potential."},
-  {code:"KLAS",name:"Las Vegas",climate:"Desert basin with strong thermal low development. Valley location traps heat. NWS VEF tends to be accurate but can underforecast on persistent ridge days. Summer highs extremely consistent 105-115F range in core summer. Spring/fall have highest variance. Watch for Pacific systems that can dramatically undercut forecasts."},
-  {code:"KLAX",name:"Los Angeles",climate:"Marine layer is THE dominant factor - everything else is secondary. Morning marine layer burns off between 10am-1pm - burn-off timing determines the high. Late burn-off = UNDER, early burn-off = OVER. Coastal station so highs more suppressed than inland (KBUR would be warmer). NWS LOX conservative - frequent OVER opportunities on offshore flow (Santa Ana) days."},
-  {code:"KSFO",name:"San Francisco",climate:"Strongest marine influence of any major station. Afternoon onshore flow through Golden Gate keeps summer highs 55-65F while inland valleys hit 100F. Fog burn-off pattern similar to LAX but more persistent. High temp betting at SFO is almost entirely about marine layer - extremely low variance in summer. Most reliable UNDER station in the network."},
-  {code:"KSEA",name:"Seattle",climate:"Marine influence significant but less extreme than SFO. Summer heat waves (rare) are the highest-edge plays - NWS dramatically underforecasts when 850mb temps exceed climatology by 10C+. Normal summer days very consistent 65-75F. Watch for offshore flow patterns that eliminate marine influence - those are the 90F+ days."},
+  {code:"KNYC",tz:"America/New_York",name:"New York (Central Park)",climate:"Urban heat island effect inflates highs vs surrounding areas. Summer sea breeze can cap temps 5-8F below inland. NWS often underpredicts on SW flow days. Watch for late-day mixing that pushes highs past forecast. Winter inversions can trap cold air and suppress highs."},
+  {code:"KLGA",tz:"America/New_York",name:"New York (LaGuardia)",climate:"Coastal exposure means marine influence on hot days. Runway heat soak can artificially elevate obs in calm winds. Generally runs 2-4F warmer than KNYC on light wind days due to asphalt/concrete. Watch for sea breeze timing in summer."},
+  {code:"KBOS",tz:"America/New_York",name:"Boston",climate:"Strong marine influence - sea breeze frequently caps summer highs 8-12F below inland. Back-bay urban core can hold heat longer. NWS Boston historically conservative on high forecasts in summer. Onshore flow days are strong UNDER plays."},
+  {code:"KPHL",tz:"America/New_York",name:"Philadelphia",climate:"Urban heat corridor between NYC and DC. Minimal marine influence despite proximity to Delaware Bay. Hot air mass days see strong mixing - NWS often underpredicts highs by 2-4F on 850mb ridge days. One of the most reliable OVER stations in summer."},
+  {code:"KDCA",tz:"America/New_York",name:"Washington D.C.",climate:"Potomac River location creates humidity trap. Urban heat island among the strongest on East Coast. NWS WBC often conservative with highs. Watch 850mb temps - every 1C above normal adds ~1.5F to surface max. Notorious for exceeding forecast highs in heat waves."},
+  {code:"KCLT",tz:"America/New_York",name:"Charlotte",climate:"Piedmont location buffers from coastal marine influence. Afternoon thunderstorm threat can abruptly end high temp pacing. NWS GSP tends to be accurate. Urban heat growing with city expansion. Watch for elevated terrain influence dampening highs in NW flow."},
+  {code:"KATL",tz:"America/New_York",name:"Atlanta",climate:"Elevated terrain (1050ft) means highs run 3-5F lower than surrounding lowlands. Urban heat island significant. Afternoon convection frequently caps highs June-August - high temp often set before noon storms develop. NWS FFC reliable but storms create timing uncertainty."},
+  {code:"KMIA",tz:"America/New_York",name:"Miami",climate:"Sea breeze battle between Atlantic and Gulf sides is the dominant factor. High temp almost always set in late morning before sea breeze arrives 12-2pm. NWS MFL typically accurate. Summer highs are extremely consistent 88-92F range - low volatility market. Watch dry season (Nov-Apr) for higher spread days."},
+  {code:"KJAX",tz:"America/New_York",name:"Jacksonville",climate:"Inland enough to reduce marine influence vs Miami. More volatile than South Florida - 850mb temps matter more. Sea breeze typically arrives later (2-4pm) allowing higher max temps. Summer thunderstorm timing critical for high temp pacing."},
+  {code:"KMDW",tz:"America/Chicago",name:"Chicago (Midway)",climate:"Urban location in SW Chicago runs 2-4F warmer than KORD. Lake Michigan influence weakest here - more continental. Wind direction critical: SW flow = no lake influence = higher highs. NE/E flow = lake air = strong UNDER. Check 925mb wind direction before betting."},
+  {code:"KORD",tz:"America/Chicago",name:"Chicago (O'Hare)",climate:"NW suburban location is more exposed to lake breeze than KMDW on E/NE flow days. Lake Michigan effect can suppress highs 10-15F on onshore flow. SW flow days eliminate lake influence entirely. One of the highest variance stations - wind direction is everything."},
+  {code:"KDTW",tz:"America/Detroit",name:"Detroit",climate:"Great Lakes influence moderate - Lake Erie/St Clair effects less dramatic than Chicago/Milwaukee. Urban heat island significant. Continental air mass patterns dominate spring/fall. NWS DTX generally reliable. Watch for strong W flow bringing Lake Michigan-modified air."},
+  {code:"KMSP",tz:"America/Chicago",name:"Minneapolis",climate:"Deep continental location - no significant water body influence. Highly reactive to 850mb temperature anomalies. Spring/fall have highest variance. NWS MPX can underforecast on strong ridge days. Winter high temps heavily influenced by snow cover albedo."},
+  {code:"KBNA",tz:"America/Chicago",name:"Nashville",climate:"Cumberland River valley location creates localized thermal patterns. Urban heat growing. No significant water body effects. NWS OHX generally accurate. Strong synoptic forcing days (heat domes) see consistent OVER performance. Watch for valley fog suppressing morning temps and delaying high."},
+  {code:"KMSY",tz:"America/Chicago",name:"New Orleans",climate:"Lake Pontchartrain and Gulf proximity create persistent marine influence. High humidity means heat index often exceeds air temp. Actual high temp relatively constrained by moisture. Sea breeze timing important. NWS LIX accurate. Summer highs very consistent 90-95F."},
+  {code:"KOKC",tz:"America/Chicago",name:"Oklahoma City",climate:"Classic continental location - highest temperature volatility of any major market. Dry line position is critical - can swing forecast 10F+ in either direction. NWS OUN sometimes misses on rapid warm/cool advection. Blue norther passages can drop highs dramatically. Best OVER plays on sustained SW flow."},
+  {code:"KDFW",tz:"America/Chicago",name:"Dallas/Ft Worth",climate:"DFW airport exposure to SW flow is excellent. Urban heat island significant. Dry line dynamics create high forecast uncertainty on convective days. Summer heat dome days (July-Aug) are extremely reliable OVERs - NWS FWD conservative. 100F+ days come in streaks - momentum matters."},
+  {code:"KDAL",tz:"America/Chicago",name:"Dallas (Love Field)",climate:"Urban core location runs 3-5F warmer than DFW on calm nights/mornings. Less exposed to airport wind effects. High temp pacing similar to DFW but slightly warmer on light wind days. Good proxy for urban heat vs airport comparison betting."},
+  {code:"KHOU",tz:"America/Chicago",name:"Houston",climate:"Gulf moisture creates persistent humidity cap on temperatures - rarely exceeds 98F due to moisture. Sea breeze from Galveston Bay influences afternoon temps. Urban heat island significant. NWS HGX reliable. Summer is a LOW VARIANCE market - humidity constrains the range."},
+  {code:"KSAT",tz:"America/Chicago",name:"San Antonio",climate:"Balcones Escarpment to the west creates interesting drainage flow patterns. Gulf moisture influence moderate. More volatile than Houston due to drier air mass potential. Can spike to 105F+ on strong SW flow with dry advection. NWS EWX can underforecast on exceptional heat days."},
+  {code:"KAUS",tz:"America/Chicago",name:"Austin",climate:"Hill Country location slightly elevated. Growing urban heat island. Transitional zone between Gulf moisture and dry continental air - creates high variance. Cap/convergence zone nearby adds convective uncertainty. Strong OVER candidate on dry W/SW flow days. Watch moisture return timing."},
+  {code:"KDEN",tz:"America/Denver",name:"Denver",climate:"Mile-high elevation (5280ft) means temperatures run 15-20F lower than sea-level equivalents. Chinook winds can drive rapid warming - 20-30F rises possible in hours. Upslope flow suppresses highs dramatically. NWS BOU handles chinook well but upslope days have high uncertainty. Wind direction from W = warm, E = cold suppressed."},
+  {code:"KBKF",tz:"America/Denver",name:"Aurora (Buckley)",climate:"Slightly lower elevation than Denver proper. Air Force base location means good instrument maintenance. Similar chinook/upslope dynamics as KDEN but slightly more exposed to plains flow. Runs slightly warmer than KDEN on E flow days."},
+  {code:"KPHX",tz:"America/Phoenix",name:"Phoenix",climate:"Desert heat island - world's most extreme urban heat effect. Sky Harbor airport surrounded by asphalt amplifies heat. Monsoon season (Jul-Sep) is critical: moisture arrival CAPS highs at 100-105F vs dry season 110-118F potential. NWS PSR very accurate for dry conditions, monsoon onset timing is key uncertainty. Pre-monsoon (May-Jun) highest OVER potential."},
+  {code:"KLAS",tz:"America/Los_Angeles",name:"Las Vegas",climate:"Desert basin with strong thermal low development. Valley location traps heat. NWS VEF tends to be accurate but can underforecast on persistent ridge days. Summer highs extremely consistent 105-115F range in core summer. Spring/fall have highest variance. Watch for Pacific systems that can dramatically undercut forecasts."},
+  {code:"KLAX",tz:"America/Los_Angeles",name:"Los Angeles",climate:"Marine layer is THE dominant factor - everything else is secondary. Morning marine layer burns off between 10am-1pm - burn-off timing determines the high. Late burn-off = UNDER, early burn-off = OVER. Coastal station so highs more suppressed than inland (KBUR would be warmer). NWS LOX conservative - frequent OVER opportunities on offshore flow (Santa Ana) days."},
+  {code:"KSFO",tz:"America/Los_Angeles",name:"San Francisco",climate:"Strongest marine influence of any major station. Afternoon onshore flow through Golden Gate keeps summer highs 55-65F while inland valleys hit 100F. Fog burn-off pattern similar to LAX but more persistent. High temp betting at SFO is almost entirely about marine layer - extremely low variance in summer. Most reliable UNDER station in the network."},
+  {code:"KSEA",tz:"America/Los_Angeles",name:"Seattle",climate:"Marine influence significant but less extreme than SFO. Summer heat waves (rare) are the highest-edge plays - NWS dramatically underforecasts when 850mb temps exceed climatology by 10C+. Normal summer days very consistent 65-75F. Watch for offshore flow patterns that eliminate marine influence - those are the 90F+ days."},
 ];
 const MODELS = ["GFS","HRRR","NBM","NAM","ECMWF-IFS","RAP","SREF","GEFS","CFS","RRFS","HREF","NBM-BC"];
 
@@ -276,10 +276,16 @@ let currentStation = STATIONS[0];
 let pickerOpen = false;
 
 // \u2500\u2500 HELPERS \u2500\u2500
-function getToday(){
-  const d=new Date();
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+function getDateInTz(tz, offsetDays){
+  const d = new Date();
+  const s = d.toLocaleDateString('en-US', {timeZone: tz||'America/New_York', year:'numeric', month:'2-digit', day:'2-digit'});
+  const [m,dy,y] = s.split('/');
+  const base = new Date(parseInt(y), parseInt(m)-1, parseInt(dy));
+  base.setDate(base.getDate() + (offsetDays||0));
+  return base.getFullYear()+'-'+String(base.getMonth()+1).padStart(2,'0')+'-'+String(base.getDate()).padStart(2,'0');
 }
+function getToday(tz){ return getDateInTz(tz, 0); }
+function getTomorrow(tz){ return getDateInTz(tz, 1); }
 function getTomorrow(){
   const d=new Date(); d.setDate(d.getDate()+1);
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -364,14 +370,15 @@ async function loadData(){
   setText('analysis-body', ''); el('analysis-body').className = 'loading';
   setHTML('analysis-body', 'Fetching weather data\u2026');
 
-  const today = getToday();
-  const tomorrow = getTomorrow();
+  const today = getToday(station.tz);
+  const tomorrow = getTomorrow(station.tz);
 
   try {
     // Fetch all data - each call fails independently
     // mt = METAR (official hourly), 1m = 1-minute ASOS (sub-hourly, slightly noisier)
-    const [liveHigh, latestObs, obs1min, todayFcst, tomorrowFcst, historyData] = await Promise.all([
+    const [liveHigh, wuHigh, latestObs, obs1min, todayFcst, tomorrowFcst, historyData] = await Promise.all([
       wethr('observations.php', {station_code: station.code, mode: 'wethr_high', logic: 'nws'}).catch(e => { console.warn('FAIL liveHigh:', e.message); return null; }),
+      wethr('observations.php', {station_code: station.code, mode: 'wethr_high', logic: 'wu'}).catch(e => { console.warn('FAIL wuHigh:', e.message); return null; }),
       wethr('observations.php', {station_code: station.code, mode: 'latest'}).catch(e => { console.warn('FAIL latestObs:', e.message); return null; }),
       wethr('observations.php', {station_code: station.code, mode: 'latest_1min'}).catch(e => { console.warn('FAIL obs1min:', e.message); return null; }),
       wethr('nws_forecasts.php', {station_code: station.code, date: today, mode: 'latest'}).catch(e => { console.warn('FAIL todayFcst:', e.message); return null; }),
@@ -383,12 +390,22 @@ async function loadData(){
 
     // \u2500\u2500 LIVE HIGH \u2500\u2500
     if(liveHigh && liveHigh.wethr_high != null){
-      setText('live-high', liveHigh.wethr_high + '\u00B0');
+      const nwsH = liveHigh.wethr_high;
+      const wuH = wuHigh && wuHigh.wethr_high != null ? wuHigh.wethr_high : null;
+      // Show WU high (finer resolution) as primary if available and higher
+      const displayHigh = (wuH != null && wuH > nwsH) ? wuH : nwsH;
+      setText('live-high', displayHigh + '\u00B0');
+      // Show both in subtitle
+      let highSub = 'NWS: ' + nwsH + '\u00B0F';
+      if(wuH != null) highSub += ' \u00B7 WU: ' + wuH + '\u00B0F';
       if(liveHigh.time_of_high_utc){
-        const t = new Date(liveHigh.time_of_high_utc).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-        setText('high-time', 'SET ' + t + ' UTC');
-        show('high-time');
+        const t = new Date(liveHigh.time_of_high_utc).toLocaleTimeString('en-US',{timeZone: station.tz, hour:'2-digit',minute:'2-digit'});
+        const tzA = new Date().toLocaleTimeString('en-US',{timeZone:station.tz,timeZoneName:'short'}).split(' ').pop();
+        setText('high-time', highSub + ' \u00B7 SET ' + t + ' ' + tzA);
+      } else {
+        setText('high-time', highSub);
       }
+      show('high-time');
     } else {
       setText('live-high', '\u2014\u00B0');
     }
@@ -558,7 +575,7 @@ async function loadData(){
     // \u2500\u2500 AI ANALYSIS \u2500\u2500
     el('analysis-body').className = 'loading';
     setHTML('analysis-body', '\u25C8 Analyzing forecast drift and model spread\u2026<br>\u25C8 Generating betting intelligence\u2026');
-    runAI(station, liveHigh, latestObs, obs1min, todayFcst, tomorrowFcst, modelForecasts, historyData);
+    runAI(station, liveHigh, wuHigh, latestObs, obs1min, todayFcst, tomorrowFcst, modelForecasts, historyData);
 
   } catch(err) {
     console.error('loadData error:', err);
@@ -572,23 +589,25 @@ async function loadData(){
   }
 }
 
-async function runAI(station, liveHigh, obs, obs1min, todayFcst, tomorrowFcst, models, history){
+async function runAI(station, liveHigh, wuHigh, obs, obs1min, todayFcst, tomorrowFcst, models, history){
   const histVer = history && history.forecasts ? history.forecasts.slice(-6).map(v=>({v:v.version,high:v.high})) : null;
 
-  // Time context
+  // Time context — use STATION's timezone, not browser timezone
+  const stationTz = station.tz || 'America/New_York';
   const now = new Date();
-  const localHour = now.getHours();
-  const timeStr = now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  const dateStr = now.toLocaleDateString([],{weekday:'long',month:'short',day:'numeric'});
+  const stationHour = parseInt(now.toLocaleString('en-US', {timeZone: stationTz, hour: 'numeric', hour12: false}));
+  const timeStr = now.toLocaleTimeString('en-US', {timeZone: stationTz, hour:'2-digit', minute:'2-digit'});
+  const dateStr = now.toLocaleDateString('en-US', {timeZone: stationTz, weekday:'long', month:'short', day:'numeric'});
+  const tzAbbr = now.toLocaleTimeString('en-US', {timeZone: stationTz, timeZoneName:'short'}).split(' ').pop();
   let phase, todayStatus;
-  if(localHour < 6){ phase='PRE-DAWN'; todayStatus='Today high NOT YET SET. Peak heating 5-8 hours away.'; }
-  else if(localHour < 10){ phase='MORNING'; todayStatus='Today high NOT YET SET. Peak likely 2-6 hours away.'; }
-  else if(localHour < 13){ phase='MID-MORNING'; todayStatus='Today high NOT YET SET. Peak likely 1-3 hours away.'; }
-  else if(localHour < 16){ phase='PEAK HEATING'; todayStatus='Today high IS BEING SET NOW. Current temp may BE the high.'; }
-  else if(localHour < 19){ phase='LATE AFTERNOON'; todayStatus='Today high LIKELY ALREADY SET. Post-peak cooling underway.'; }
-  else if(localHour < 21){ phase='EVENING'; todayStatus='Today high ALMOST CERTAINLY SET. Focus on tomorrow.'; }
+  if(stationHour < 6){ phase='PRE-DAWN'; todayStatus='Today high NOT YET SET. Peak heating 5-8 hours away.'; }
+  else if(stationHour < 10){ phase='MORNING'; todayStatus='Today high NOT YET SET. Peak likely 2-6 hours away.'; }
+  else if(stationHour < 13){ phase='MID-MORNING'; todayStatus='Today high NOT YET SET. Peak likely 1-3 hours away.'; }
+  else if(stationHour < 16){ phase='PEAK HEATING'; todayStatus='Today high IS BEING SET NOW. Current temp may BE the high.'; }
+  else if(stationHour < 19){ phase='LATE AFTERNOON'; todayStatus='Today high LIKELY ALREADY SET. Post-peak cooling underway.'; }
+  else if(stationHour < 21){ phase='EVENING'; todayStatus='Today high ALMOST CERTAINLY SET. Focus on tomorrow.'; }
   else { phase='NIGHT'; todayStatus='Today high IS FINAL. Do NOT discuss today trajectory. Focus entirely on tomorrow.'; }
-  const timeContext = 'TIME: '+timeStr+' LOCAL ('+phase+') | '+dateStr+'\nTODAY STATUS: '+todayStatus;
+  const timeContext = 'TIME: '+timeStr+' '+tzAbbr+' ('+phase+') | '+dateStr+'\nSTATION TIMEZONE: '+stationTz+'\nTODAY STATUS: '+todayStatus;
 
   // Model summary
   const modelPeaks = models.length ? models.map(m=>m.model+':'+m.high+'F').join(', ') : 'N/A';
@@ -625,11 +644,12 @@ async function runAI(station, liveHigh, obs, obs1min, todayFcst, tomorrowFcst, m
 
   const prompt =
 'You are a forensic meteorologist for temperature betting markets (Kalshi/Wethr.net).\n' +
-'STATION: '+station.name+' ('+station.code+') | DATE: '+getToday()+'\n\n' +
+'STATION: '+station.name+' ('+station.code+') | DATE: '+getToday(station.tz)+'\n\n' +
 '=== TIME CONTEXT (CRITICAL) ===\n' + timeContext + '\n\n' +
 '=== STATION CLIMATE INTELLIGENCE ===\n' + station.climate + '\n\n' +
 '=== LIVE OBSERVATIONS ===\n' +
-'Live Wethr High (NWS): '+(liveHigh&&liveHigh.wethr_high!=null?liveHigh.wethr_high:'N/A')+'F\n' +
+'Live Running High (NWS logic): '+(liveHigh&&liveHigh.wethr_high!=null?liveHigh.wethr_high:'N/A')+'F\n' +
+'Live Running High (WU logic, finer resolution): '+(wuHigh&&wuHigh.wethr_high!=null?wuHigh.wethr_high:'N/A')+'F\n' +
 'Temp MT (official METAR, settlement basis): '+(mtTemp!=null?mtTemp:'N/A')+'F\n' +
 'Temp 1MIN (ASOS leading indicator): '+(m1Temp!=null?m1Temp:'N/A')+'F\n' +
 'Dew Point: '+dewPt+'F | RH: '+rh+'%\n' +
