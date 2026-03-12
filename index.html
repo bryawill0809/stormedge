@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -371,12 +372,12 @@ async function loadData(){
     // Fetch all data - each call fails independently
     // mt = METAR (official hourly), 1m = 1-minute ASOS (sub-hourly, slightly noisier)
     const [liveHigh, latestObs, obs1min, todayFcst, tomorrowFcst, historyData] = await Promise.all([
-      wethr('observations.php', {station_code: station.code, mode: 'wethr_high', logic: 'nws'}).catch(e => { console.warn('liveHigh:', e.message); return null; }),
-      wethr('observations.php', {station_code: station.code, mode: 'latest'}).catch(e => { console.warn('latestObs:', e.message); return null; }),
-      wethr('observations.php', {station_code: station.code, mode: 'latest', precision: '1min'}).catch(() => null),
-      wethr('nws_forecasts.php', {station_code: station.code, date: today, mode: 'latest'}).catch(e => { console.warn('todayFcst:', e.message); return null; }),
-      wethr('nws_forecasts.php', {station_code: station.code, date: tomorrow, mode: 'latest'}).catch(e => { console.warn('tomorrowFcst:', e.message); return null; }),
-      wethr('nws_forecasts.php', {station_code: station.code, date: today, mode: 'history'}).catch(() => null),
+      wethr('observations.php', {station_code: station.code, mode: 'wethr_high', logic: 'nws'}).catch(e => { console.warn('FAIL liveHigh:', e.message); return null; }),
+      wethr('observations.php', {station_code: station.code, mode: 'latest'}).catch(e => { console.warn('FAIL latestObs:', e.message); return null; }),
+      wethr('observations.php', {station_code: station.code, mode: 'latest_1min'}).catch(e => { console.warn('FAIL obs1min:', e.message); return null; }),
+      wethr('nws_forecasts.php', {station_code: station.code, date: today, mode: 'latest'}).catch(e => { console.warn('FAIL todayFcst:', e.message); return null; }),
+      wethr('nws_forecasts.php', {station_code: station.code, date: tomorrow, mode: 'latest'}).catch(e => { console.warn('FAIL tomorrowFcst:', e.message); return null; }),
+      wethr('nws_forecasts.php', {station_code: station.code, date: today, mode: 'history'}).catch(e => { console.warn('FAIL history:', e.message); return null; }),
     ]);
 
     console.log('DATA:', { liveHigh: !!liveHigh, latestObs: !!latestObs, obs1min: !!obs1min, todayFcst: !!todayFcst, tomorrowFcst: !!tomorrowFcst });
