@@ -847,21 +847,22 @@ pacingTable+'\n\n' +
     setHTML('analysis-body', html);
     el('analysis-body').className = 'analysis-body';
 
-    // Bet signal
+    // Bet signal — pass full forensic report as context so dashboard syncs with AI output
     const betPrompt =
-'You are a weather derivatives pricing engine. Return ONLY valid JSON, no markdown.\n' +
+'You are a weather derivatives pricing engine. You just wrote the forensic report below. Extract your own conclusions into JSON. Return ONLY valid JSON, no markdown, no explanation.\n\n' +
+'=== YOUR FORENSIC REPORT (extract numbers from this) ===\n' + text + '\n\n' +
+'=== RAW DATA CONTEXT ===\n' +
 'Station: '+station.name+' ('+station.code+') | '+timeContext+'\n' +
 'WU High: '+(wuHigh&&wuHigh.wethr_high?wuHigh.wethr_high:'?')+'F | NWS: '+(liveHigh&&liveHigh.wethr_high?liveHigh.wethr_high:'?')+'F | MT: '+(mtTemp!=null?mtTemp:'?')+'F\n' +
-'Today NWS: '+(todayFcst&&todayFcst.high?todayFcst.high:'?')+'F v'+(todayFcst?todayFcst.version:'?')+' | Tomorrow: '+(tomorrowFcst&&tomorrowFcst.high?tomorrowFcst.high:'?')+'F v'+(tomorrowFcst?tomorrowFcst.version:'?')+'\n' +
-'Models: '+modelPeaks+(modelMean?' | Mean: '+modelMean+'F | Spread: '+modelSpread+'F':'')+'\n' +
-'Drift: '+(histVer?histVer.map(v=>'v'+v.v+':'+v.high).join(' -> '):'N/A')+'\n' +
-'Dew: '+dewPt+'F | Wind: '+windDir+' '+windSpd+'mph | RH: '+rh+'%\n' +
-'Output ONLY this JSON: {"tomorrowProjectedHigh":0,"tomorrowRangeLow":0,"tomorrowRangeHigh":0,"hardFloor":0,"hardCeiling":0,"tomorrowConfidence":0,"pinRisk":false,"integerProbs":{"minus2":0,"minus1":0,"pin":0,"plus1":0,"plus2":0},"trendDirection":"FLAT","betSide":"PASS","betEdge":"WEAK","betNote":""}';
+'Today NWS: '+(todayFcst&&todayFcst.high?todayFcst.high:'?')+'F | Tomorrow NWS: '+(tomorrowFcst&&tomorrowFcst.high?tomorrowFcst.high:'?')+'F\n' +
+'Models Mean: '+(modelMean||'?')+'F | Spread: '+(modelSpread||'?')+'F\n\n' +
+'Extract from your report above and output ONLY this JSON (numbers must match your report exactly):\n' +
+'{"tomorrowProjectedHigh":integer,"tomorrowRangeLow":integer,"tomorrowRangeHigh":integer,"hardFloor":integer,"hardCeiling":integer,"tomorrowConfidence":integer,"pinRisk":boolean,"integerProbs":{"minus2":number,"minus1":number,"pin":number,"plus1":number,"plus2":number},"trendDirection":"UP|DOWN|FLAT","betSide":"OVER|UNDER|PASS","betEdge":"STRONG|MODERATE|WEAK","betNote":"one sentence max 15 words"}';
 
     const br = await fetch('/.netlify/functions/claude', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:400, messages:[{role:'user',content:betPrompt}]})
+      body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:600, messages:[{role:'user',content:betPrompt}]})
     });
     const bd = await br.json();
     if(!bd.error && bd.content){
@@ -972,4 +973,5 @@ setInterval(loadData, 5*60*1000);
 </script>
 </body>
 </html>
+
 
