@@ -108,6 +108,13 @@ html,body{background:#07090d;color:#d0dde8;font-family:'Barlow',sans-serif;min-h
 .warn-box{background:rgba(255,203,71,.07);border:1px solid rgba(255,203,71,.2);color:var(--gold);padding:12px 16px;font-family:var(--mono);font-size:11px;margin-bottom:12px}
 .footer{font-family:var(--mono);font-size:9px;color:var(--mut);text-align:center;padding-top:14px;border-top:1px solid var(--bd);letter-spacing:1px}
 .spin{display:inline-block;animation:spin 1s linear infinite}
+.cond-item{background:var(--s1);border:1px solid var(--bd);padding:10px 12px;}
+.cond-label{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--mut);text-transform:uppercase;margin-bottom:4px}
+.cond-val{font-family:var(--cond);font-weight:700;font-size:20px;color:#fff}
+.cond-sub{font-family:var(--mono);font-size:9px;color:var(--dim);margin-top:2px}
+.obs-badge{display:inline-block;font-family:var(--mono);font-size:8px;padding:1px 5px;margin-left:4px;vertical-align:middle}
+.obs-mt{background:rgba(0,255,200,.12);color:var(--acid);border:1px solid rgba(0,255,200,.2)}
+.obs-1m{background:rgba(91,200,255,.1);color:var(--ice);border:1px solid rgba(91,200,255,.2)}
 .section-head{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--mut);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .section-head::after{content:'';flex:1;height:1px;background:var(--bd)}
 </style>
@@ -158,6 +165,13 @@ html,body{background:#07090d;color:#d0dde8;font-family:'Barlow',sans-serif;min-h
       <div class="stat-val stat-med" id="tomorrow-high" style="color:var(--gold)">&mdash;&deg;</div>
       <div class="stat-info" id="tomorrow-sub"></div>
     </div>
+  </div>
+
+  <!-- CURRENT CONDITIONS -->
+  <div id="conditions-section" style="display:none;margin-bottom:12px">
+    <div class="section-head">Current Conditions</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px" id="conditions-grid"></div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--mut);margin-top:6px" id="conditions-meta"></div>
   </div>
 
   <!-- BET BANNER -->
@@ -227,18 +241,36 @@ html,body{background:#07090d;color:#d0dde8;font-family:'Barlow',sans-serif;min-h
 
 <script>
 const STATIONS = [
-  {code:"KNYC",name:"New York (Central Park)"},{code:"KLGA",name:"New York (LaGuardia)"},
-  {code:"KBOS",name:"Boston"},{code:"KPHL",name:"Philadelphia"},{code:"KDCA",name:"Washington D.C."},
-  {code:"KCLT",name:"Charlotte"},{code:"KATL",name:"Atlanta"},{code:"KMIA",name:"Miami"},
-  {code:"KJAX",name:"Jacksonville"},{code:"KMDW",name:"Chicago (Midway)"},{code:"KORD",name:"Chicago (O'Hare)"},
-  {code:"KDTW",name:"Detroit"},{code:"KMSP",name:"Minneapolis"},{code:"KBNA",name:"Nashville"},
-  {code:"KMSY",name:"New Orleans"},{code:"KOKC",name:"Oklahoma City"},{code:"KDFW",name:"Dallas/Ft Worth"},
-  {code:"KDAL",name:"Dallas (Love Field)"},{code:"KHOU",name:"Houston"},{code:"KSAT",name:"San Antonio"},
-  {code:"KAUS",name:"Austin"},{code:"KDEN",name:"Denver"},{code:"KBKF",name:"Aurora (Buckley)"},
-  {code:"KPHX",name:"Phoenix"},{code:"KLAS",name:"Las Vegas"},{code:"KLAX",name:"Los Angeles"},
-  {code:"KSFO",name:"San Francisco"},{code:"KSEA",name:"Seattle"},
+  {code:"KNYC",name:"New York (Central Park)",climate:"Urban heat island effect inflates highs vs surrounding areas. Summer sea breeze can cap temps 5-8F below inland. NWS often underpredicts on SW flow days. Watch for late-day mixing that pushes highs past forecast. Winter inversions can trap cold air and suppress highs."},
+  {code:"KLGA",name:"New York (LaGuardia)",climate:"Coastal exposure means marine influence on hot days. Runway heat soak can artificially elevate obs in calm winds. Generally runs 2-4F warmer than KNYC on light wind days due to asphalt/concrete. Watch for sea breeze timing in summer."},
+  {code:"KBOS",name:"Boston",climate:"Strong marine influence - sea breeze frequently caps summer highs 8-12F below inland. Back-bay urban core can hold heat longer. NWS Boston historically conservative on high forecasts in summer. Onshore flow days are strong UNDER plays."},
+  {code:"KPHL",name:"Philadelphia",climate:"Urban heat corridor between NYC and DC. Minimal marine influence despite proximity to Delaware Bay. Hot air mass days see strong mixing - NWS often underpredicts highs by 2-4F on 850mb ridge days. One of the most reliable OVER stations in summer."},
+  {code:"KDCA",name:"Washington D.C.",climate:"Potomac River location creates humidity trap. Urban heat island among the strongest on East Coast. NWS WBC often conservative with highs. Watch 850mb temps - every 1C above normal adds ~1.5F to surface max. Notorious for exceeding forecast highs in heat waves."},
+  {code:"KCLT",name:"Charlotte",climate:"Piedmont location buffers from coastal marine influence. Afternoon thunderstorm threat can abruptly end high temp pacing. NWS GSP tends to be accurate. Urban heat growing with city expansion. Watch for elevated terrain influence dampening highs in NW flow."},
+  {code:"KATL",name:"Atlanta",climate:"Elevated terrain (1050ft) means highs run 3-5F lower than surrounding lowlands. Urban heat island significant. Afternoon convection frequently caps highs June-August - high temp often set before noon storms develop. NWS FFC reliable but storms create timing uncertainty."},
+  {code:"KMIA",name:"Miami",climate:"Sea breeze battle between Atlantic and Gulf sides is the dominant factor. High temp almost always set in late morning before sea breeze arrives 12-2pm. NWS MFL typically accurate. Summer highs are extremely consistent 88-92F range - low volatility market. Watch dry season (Nov-Apr) for higher spread days."},
+  {code:"KJAX",name:"Jacksonville",climate:"Inland enough to reduce marine influence vs Miami. More volatile than South Florida - 850mb temps matter more. Sea breeze typically arrives later (2-4pm) allowing higher max temps. Summer thunderstorm timing critical for high temp pacing."},
+  {code:"KMDW",name:"Chicago (Midway)",climate:"Urban location in SW Chicago runs 2-4F warmer than KORD. Lake Michigan influence weakest here - more continental. Wind direction critical: SW flow = no lake influence = higher highs. NE/E flow = lake air = strong UNDER. Check 925mb wind direction before betting."},
+  {code:"KORD",name:"Chicago (O'Hare)",climate:"NW suburban location is more exposed to lake breeze than KMDW on E/NE flow days. Lake Michigan effect can suppress highs 10-15F on onshore flow. SW flow days eliminate lake influence entirely. One of the highest variance stations - wind direction is everything."},
+  {code:"KDTW",name:"Detroit",climate:"Great Lakes influence moderate - Lake Erie/St Clair effects less dramatic than Chicago/Milwaukee. Urban heat island significant. Continental air mass patterns dominate spring/fall. NWS DTX generally reliable. Watch for strong W flow bringing Lake Michigan-modified air."},
+  {code:"KMSP",name:"Minneapolis",climate:"Deep continental location - no significant water body influence. Highly reactive to 850mb temperature anomalies. Spring/fall have highest variance. NWS MPX can underforecast on strong ridge days. Winter high temps heavily influenced by snow cover albedo."},
+  {code:"KBNA",name:"Nashville",climate:"Cumberland River valley location creates localized thermal patterns. Urban heat growing. No significant water body effects. NWS OHX generally accurate. Strong synoptic forcing days (heat domes) see consistent OVER performance. Watch for valley fog suppressing morning temps and delaying high."},
+  {code:"KMSY",name:"New Orleans",climate:"Lake Pontchartrain and Gulf proximity create persistent marine influence. High humidity means heat index often exceeds air temp. Actual high temp relatively constrained by moisture. Sea breeze timing important. NWS LIX accurate. Summer highs very consistent 90-95F."},
+  {code:"KOKC",name:"Oklahoma City",climate:"Classic continental location - highest temperature volatility of any major market. Dry line position is critical - can swing forecast 10F+ in either direction. NWS OUN sometimes misses on rapid warm/cool advection. Blue norther passages can drop highs dramatically. Best OVER plays on sustained SW flow."},
+  {code:"KDFW",name:"Dallas/Ft Worth",climate:"DFW airport exposure to SW flow is excellent. Urban heat island significant. Dry line dynamics create high forecast uncertainty on convective days. Summer heat dome days (July-Aug) are extremely reliable OVERs - NWS FWD conservative. 100F+ days come in streaks - momentum matters."},
+  {code:"KDAL",name:"Dallas (Love Field)",climate:"Urban core location runs 3-5F warmer than DFW on calm nights/mornings. Less exposed to airport wind effects. High temp pacing similar to DFW but slightly warmer on light wind days. Good proxy for urban heat vs airport comparison betting."},
+  {code:"KHOU",name:"Houston",climate:"Gulf moisture creates persistent humidity cap on temperatures - rarely exceeds 98F due to moisture. Sea breeze from Galveston Bay influences afternoon temps. Urban heat island significant. NWS HGX reliable. Summer is a LOW VARIANCE market - humidity constrains the range."},
+  {code:"KSAT",name:"San Antonio",climate:"Balcones Escarpment to the west creates interesting drainage flow patterns. Gulf moisture influence moderate. More volatile than Houston due to drier air mass potential. Can spike to 105F+ on strong SW flow with dry advection. NWS EWX can underforecast on exceptional heat days."},
+  {code:"KAUS",name:"Austin",climate:"Hill Country location slightly elevated. Growing urban heat island. Transitional zone between Gulf moisture and dry continental air - creates high variance. Cap/convergence zone nearby adds convective uncertainty. Strong OVER candidate on dry W/SW flow days. Watch moisture return timing."},
+  {code:"KDEN",name:"Denver",climate:"Mile-high elevation (5280ft) means temperatures run 15-20F lower than sea-level equivalents. Chinook winds can drive rapid warming - 20-30F rises possible in hours. Upslope flow suppresses highs dramatically. NWS BOU handles chinook well but upslope days have high uncertainty. Wind direction from W = warm, E = cold suppressed."},
+  {code:"KBKF",name:"Aurora (Buckley)",climate:"Slightly lower elevation than Denver proper. Air Force base location means good instrument maintenance. Similar chinook/upslope dynamics as KDEN but slightly more exposed to plains flow. Runs slightly warmer than KDEN on E flow days."},
+  {code:"KPHX",name:"Phoenix",climate:"Desert heat island - world's most extreme urban heat effect. Sky Harbor airport surrounded by asphalt amplifies heat. Monsoon season (Jul-Sep) is critical: moisture arrival CAPS highs at 100-105F vs dry season 110-118F potential. NWS PSR very accurate for dry conditions, monsoon onset timing is key uncertainty. Pre-monsoon (May-Jun) highest OVER potential."},
+  {code:"KLAS",name:"Las Vegas",climate:"Desert basin with strong thermal low development. Valley location traps heat. NWS VEF tends to be accurate but can underforecast on persistent ridge days. Summer highs extremely consistent 105-115F range in core summer. Spring/fall have highest variance. Watch for Pacific systems that can dramatically undercut forecasts."},
+  {code:"KLAX",name:"Los Angeles",climate:"Marine layer is THE dominant factor - everything else is secondary. Morning marine layer burns off between 10am-1pm - burn-off timing determines the high. Late burn-off = UNDER, early burn-off = OVER. Coastal station so highs more suppressed than inland (KBUR would be warmer). NWS LOX conservative - frequent OVER opportunities on offshore flow (Santa Ana) days."},
+  {code:"KSFO",name:"San Francisco",climate:"Strongest marine influence of any major station. Afternoon onshore flow through Golden Gate keeps summer highs 55-65F while inland valleys hit 100F. Fog burn-off pattern similar to LAX but more persistent. High temp betting at SFO is almost entirely about marine layer - extremely low variance in summer. Most reliable UNDER station in the network."},
+  {code:"KSEA",name:"Seattle",climate:"Marine influence significant but less extreme than SFO. Summer heat waves (rare) are the highest-edge plays - NWS dramatically underforecasts when 850mb temps exceed climatology by 10C+. Normal summer days very consistent 65-75F. Watch for offshore flow patterns that eliminate marine influence - those are the 90F+ days."},
 ];
-const MODELS = ["GFS","HRRR","NBM","NAM","ECMWF-IFS"];
+const MODELS = ["GFS","HRRR","NBM","NAM","ECMWF-IFS","RAP","SREF","GEFS","CFS","RRFS","HREF","NBM-BC"];
 
 let currentStation = STATIONS[0];
 let pickerOpen = false;
@@ -336,10 +368,12 @@ async function loadData(){
   const tomorrow = getTomorrow();
 
   try {
-    // Fetch all data \u2014 each call fails independently
-    const [liveHigh, latestObs, todayFcst, tomorrowFcst, historyData] = await Promise.all([
+    // Fetch all data - each call fails independently
+    // mt = METAR (official hourly), 1m = 1-minute ASOS (sub-hourly, slightly noisier)
+    const [liveHigh, latestObs, obs1min, todayFcst, tomorrowFcst, historyData] = await Promise.all([
       wethr('observations.php', {station_code: station.code, mode: 'wethr_high', logic: 'nws'}).catch(e => { console.warn('liveHigh:', e.message); return null; }),
       wethr('observations.php', {station_code: station.code, mode: 'latest'}).catch(e => { console.warn('latestObs:', e.message); return null; }),
+      wethr('observations.php', {station_code: station.code, mode: 'latest', precision: '1min'}).catch(() => null),
       wethr('nws_forecasts.php', {station_code: station.code, date: today, mode: 'latest'}).catch(e => { console.warn('todayFcst:', e.message); return null; }),
       wethr('nws_forecasts.php', {station_code: station.code, date: tomorrow, mode: 'latest'}).catch(e => { console.warn('tomorrowFcst:', e.message); return null; }),
       wethr('nws_forecasts.php', {station_code: station.code, date: today, mode: 'history'}).catch(() => null),
@@ -359,11 +393,74 @@ async function loadData(){
       setText('live-high', '\u2014\u00B0');
     }
 
-    // \u2500\u2500 CURRENT OBS \u2500\u2500
+    // ── CURRENT OBS ──
+    // mt = official METAR (rounded to whole degrees, gold standard for high temp tracking)
+    // 1min = ASOS 1-minute (more recent but noisier, sub-degree precision)
+    // Use mt as authoritative, show 1min as supplemental real-time
+    const mtTemp = latestObs ? roundTemp(latestObs.temperature_display) : null;
+    const m1Temp = obs1min ? roundTemp(obs1min.temperature_display) : null;
+
     if(latestObs){
-      const temp = roundTemp(latestObs.temperature_display);
-      const rh = latestObs.relative_humidity ? Math.round(latestObs.relative_humidity) : '\u2014';
-      setText('live-sub', 'Current: ' + (temp||'\u2014') + '\u00B0F \u00B7 RH: ' + rh + '%');
+      const rh = latestObs.relative_humidity ? Math.round(latestObs.relative_humidity) : '—';
+      const m1Info = (m1Temp !== null && m1Temp !== mtTemp) ? ' · 1m: ' + m1Temp + '°F' : '';
+      setText('live-sub', 'MT: ' + (mtTemp||'—') + '°F' + m1Info + ' · RH: ' + rh + '%');
+    }
+
+    // Build current conditions grid
+    const obsForDisplay = obs1min || latestObs;
+    const obsSource = obs1min ? '1m' : 'mt';
+    if(latestObs || obs1min){
+      const windDir = latestObs && latestObs.wind_direction ? latestObs.wind_direction : '—';
+      const windSpd = latestObs && latestObs.wind_speed ? Math.round(parseFloat(latestObs.wind_speed)) : '—';
+      const windGust = latestObs && latestObs.wind_gust ? Math.round(parseFloat(latestObs.wind_gust)) : null;
+      const dewPt = latestObs && latestObs.dew_point != null ? Math.round(parseFloat(latestObs.dew_point)) : '—';
+      const rh = latestObs && latestObs.relative_humidity ? Math.round(latestObs.relative_humidity) : '—';
+      const vis = latestObs && latestObs.visibility ? latestObs.visibility : '—';
+      const slp = latestObs && latestObs.sea_level_pressure ? parseFloat(latestObs.sea_level_pressure).toFixed(1) : '—';
+      const altim = latestObs && latestObs.altimeter ? parseFloat(latestObs.altimeter).toFixed(2) : '—';
+
+      // mt vs 1min temp comparison
+      const tempDiff = (mtTemp !== null && m1Temp !== null) ? (m1Temp - mtTemp) : null;
+      const tempDiffStr = tempDiff !== null ? (tempDiff >= 0 ? '+' : '') + tempDiff + '°' : '';
+
+      const conditions = [
+        {label:'TEMP (MT)', val: (mtTemp||'—')+'°F', sub: 'Official METAR', badge:'mt'},
+        {label:'TEMP (1MIN)', val: (m1Temp||'—')+'°F', sub: tempDiffStr ? 'vs MT: '+tempDiffStr : 'Sub-hourly ASOS', badge:'1m'},
+        {label:'DEW POINT', val: dewPt+'°F', sub: 'RH: '+rh+'%', badge:null},
+        {label:'WIND', val: windDir+' '+windSpd+'kt', sub: windGust ? 'Gust: '+windGust+'kt' : 'No gust', badge:null},
+        {label:'VISIBILITY', val: vis+' mi', sub: 'Surface', badge:null},
+        {label:'ALTIMETER', val: altim+'"', sub: 'SLP: '+slp+'mb', badge:null},
+      ];
+
+      // Add DSM high if available
+      if(latestObs && latestObs.dsm_high_display != null){
+        conditions.push({label:'DSM HIGH', val: Math.round(latestObs.dsm_high_display)+'°F', sub: 'Daily summary max', badge:'mt'});
+      }
+      // Add 6hr high if available
+      if(latestObs && latestObs.six_hour_high_display != null){
+        conditions.push({label:'6HR HIGH', val: Math.round(latestObs.six_hour_high_display)+'°F', sub: '6-hour max', badge:'mt'});
+      }
+
+      el('conditions-grid').innerHTML = conditions.map(c =>
+        '<div class="cond-item">' +
+          '<div class="cond-label">' + c.label +
+            (c.badge ? '<span class="obs-badge obs-'+c.badge+'">'+c.badge.toUpperCase()+'</span>' : '') +
+          '</div>' +
+          '<div class="cond-val">' + c.val + '</div>' +
+          '<div class="cond-sub">' + c.sub + '</div>' +
+        '</div>'
+      ).join('');
+
+      // Meta line showing observation times
+      const mtTime = latestObs && latestObs.observation_time ? latestObs.observation_time.split(' ')[1] : '';
+      const m1Time = obs1min && obs1min.observation_time ? obs1min.observation_time.split(' ')[1] : '';
+      el('conditions-meta').innerHTML =
+        '<span style="color:var(--acid)">MT</span> = Official METAR (hourly, rounded integers, authoritative for high temp) &nbsp;|&nbsp; ' +
+        '<span style="color:var(--ice)">1M</span> = ASOS 1-minute (sub-hourly, decimal precision, leading indicator)' +
+        (mtTime ? ' &nbsp;|&nbsp; MT obs: '+mtTime+' UTC' : '') +
+        (m1Time ? ' &nbsp;|&nbsp; 1M obs: '+m1Time+' UTC' : '');
+
+      show('conditions-section');
     }
 
     // \u2500\u2500 TODAY \u2500\u2500
@@ -409,7 +506,8 @@ async function loadData(){
 
     // \u2500\u2500 MODEL CONSENSUS \u2500\u2500
     const now = new Date();
-    const pe = new Date(now); pe.setHours(pe.getHours()+12);
+    // Pull 30 hours to capture full today + overnight into tomorrow
+    const pe = new Date(now); pe.setHours(pe.getHours()+30);
     const psStr = now.toISOString().split('.')[0]+'Z';
     const peStr = pe.toISOString().split('.')[0]+'Z';
     const mResults = await Promise.allSettled(
@@ -418,8 +516,17 @@ async function loadData(){
     const modelForecasts = [];
     mResults.forEach((r,i) => {
       if(r.status==='fulfilled' && Array.isArray(r.value) && r.value.length>0){
-        const temps = r.value.map(d=>d.temperature_f).filter(Boolean);
-        if(temps.length){ modelForecasts.push({model:MODELS[i], high:Math.round(Math.max(...temps))}); }
+        const pts = r.value.filter(d=>d.temperature_f!=null);
+        if(pts.length){
+          const temps = pts.map(d=>d.temperature_f);
+          const high = Math.round(Math.max(...temps));
+          // Build hourly pacing curve: [hour_offset, temp] pairs
+          const pacing = pts.map(d=>{
+            const hr = Math.round((new Date(d.valid_time)-now)/3600000);
+            return [hr, Math.round(d.temperature_f)];
+          }).filter(p=>p[0]>=0 && p[0]<=30);
+          modelForecasts.push({model:MODELS[i], high, pacing});
+        }
       }
     });
     if(modelForecasts.length){
@@ -451,7 +558,7 @@ async function loadData(){
     // \u2500\u2500 AI ANALYSIS \u2500\u2500
     el('analysis-body').className = 'loading';
     setHTML('analysis-body', '\u25C8 Analyzing forecast drift and model spread\u2026<br>\u25C8 Generating betting intelligence\u2026');
-    runAI(station, liveHigh, latestObs, todayFcst, tomorrowFcst, modelForecasts, historyData);
+    runAI(station, liveHigh, latestObs, obs1min, todayFcst, tomorrowFcst, modelForecasts, historyData);
 
   } catch(err) {
     console.error('loadData error:', err);
@@ -465,27 +572,64 @@ async function loadData(){
   }
 }
 
-async function runAI(station, liveHigh, obs, todayFcst, tomorrowFcst, models, history){
-  const histVer = history && history.forecasts ? history.forecasts.slice(-4).map(v=>({v:v.version,high:v.high})) : null;
-  const prompt = `You are a forensic meteorologist for temperature betting markets (Kalshi/Wethr.net).
-STATION: ${station.name} (${station.code}) | DATE: ${getToday()}
-LIVE WETHR HIGH (NWS): ${liveHigh&&liveHigh.wethr_high!=null?liveHigh.wethr_high:'N/A'}\u00B0F
-CURRENT TEMP: ${obs&&obs.temperature_display?Math.round(obs.temperature_display):'N/A'}\u00B0F | HUMIDITY: ${obs&&obs.relative_humidity?Math.round(obs.relative_humidity):'N/A'}%
-TODAY NWS FORECAST HIGH: ${todayFcst&&todayFcst.high!=null?todayFcst.high:'N/A'}\u00B0F (v${todayFcst?todayFcst.version:'?'})
-TOMORROW NWS FORECAST HIGH: ${tomorrowFcst&&tomorrowFcst.high!=null?tomorrowFcst.high:'N/A'}\u00B0F (v${tomorrowFcst?tomorrowFcst.version:'?'})
-FORECAST VERSION HISTORY: ${histVer?JSON.stringify(histVer):'N/A'}
-MODEL CONSENSUS: ${models.length?models.map(m=>m.model+':'+m.high+'F').join(', '):'N/A'}
-Provide sharp betting intelligence:
-## TODAY HIGH \u2014 Is it locked in or can it still move?
-## TOMORROW HIGH \u2014 Best projection with confidence range. Key drivers.
-## BETTING EDGE \u2014 OVER or UNDER on tomorrow high line. Be direct.
-## RISK FLAGS \u2014 What could invalidate this?`;
+async function runAI(station, liveHigh, obs, obs1min, todayFcst, tomorrowFcst, models, history){
+  const histVer = history && history.forecasts ? history.forecasts.slice(-6).map(v=>({v:v.version,high:v.high})) : null;
+
+  // Build pacing table: for each hour offset, show all model temps side by side
+  let pacingTable = '';
+  if(models.length > 0){
+    const allHours = [...new Set(models.flatMap(m=>m.pacing.map(p=>p[0])))].sort((a,b)=>a-b);
+    const header = 'HR  | ' + models.map(m=>m.model.padEnd(10)).join(' | ');
+    const rows = allHours.map(hr=>{
+      const vals = models.map(m=>{
+        const pt = m.pacing.find(p=>p[0]===hr);
+        return pt ? String(pt[1]).padEnd(10) : '?'.padEnd(10);
+      });
+      return String(hr).padStart(3)+' | '+vals.join(' | ');
+    });
+    pacingTable = header + '\n' + rows.join('\n');
+  }
+
+  // Model peak summary
+  const modelPeaks = models.map(m=>m.model+':'+m.high+'F').join(', ');
+  const modelMean = models.length ? Math.round(models.reduce((a,m)=>a+m.high,0)/models.length) : null;
+  const modelSpread = models.length ? Math.max(...models.map(m=>m.high))-Math.min(...models.map(m=>m.high)) : null;
+
+  const prompt = 'You are a forensic meteorologist specializing in temperature betting markets (Kalshi/Wethr.net). You have deep expertise in the specific micro-climate of this station.\n\n' +
+'STATION: '+station.name+' ('+station.code+') | DATE: '+getToday()+'\n\n' +
+'=== STATION CLIMATE INTELLIGENCE ===\n'+station.climate+'\n\n' +
+'=== LIVE DATA ===\n' +
+'Live Wethr High (NWS logic): '+(liveHigh&&liveHigh.wethr_high!=null?liveHigh.wethr_high:'N/A')+'F\n' +
+'TEMP (MT - official METAR, authoritative): '+(obs&&obs.temperature_display?Math.round(obs.temperature_display):'N/A')+'F\n' +
+'TEMP (1MIN - ASOS sub-hourly, leading indicator): '+(obs1min&&obs1min.temperature_display?Math.round(obs1min.temperature_display):'N/A')+'F\n' +
+'NOTE: MT temp is rounded to whole degrees and is the official reading used for high temp settlement. 1MIN is decimal precision and updates more frequently but can be noisier. When 1MIN > MT, temps may be rising between METAR obs.\n' +
+'Dew Point: '+(obs&&obs.dew_point!=null?Math.round(parseFloat(obs.dew_point)):'N/A')+'F | RH: '+(obs&&obs.relative_humidity?Math.round(obs.relative_humidity):'N/A')+'%\n' +
+'Wind: '+(obs&&obs.wind_direction?obs.wind_direction:'N/A')+' '+(obs&&obs.wind_speed?Math.round(parseFloat(obs.wind_speed)):'N/A')+'kt'+(obs&&obs.wind_gust?' Gust '+ Math.round(parseFloat(obs.wind_gust))+'kt':'')+'\n' +
+'Visibility: '+(obs&&obs.visibility?obs.visibility:'N/A')+' mi | Altimeter: '+(obs&&obs.altimeter?parseFloat(obs.altimeter).toFixed(2):'N/A')+'"\n\n' +
+'=== NWS FORECASTS ===\n' +
+'Today High: '+(todayFcst&&todayFcst.high!=null?todayFcst.high:'N/A')+'F (version '+( todayFcst?todayFcst.version:'?')+')\n' +
+'Tomorrow High: '+(tomorrowFcst&&tomorrowFcst.high!=null?tomorrowFcst.high:'N/A')+'F (version '+(tomorrowFcst?tomorrowFcst.version:'?')+')\n' +
+'Today Hourly NWS: '+(todayFcst&&todayFcst.hourly_temps?todayFcst.hourly_temps.map((t,i)=>i+':'+t).filter(s=>!s.endsWith('null')).join(', '):'N/A')+'\n' +
+'Tomorrow Hourly NWS: '+(tomorrowFcst&&tomorrowFcst.hourly_temps?tomorrowFcst.hourly_temps.map((t,i)=>i+':'+t).filter(s=>!s.endsWith('null')).join(', '):'N/A')+'\n\n' +
+'=== FORECAST VERSION DRIFT ===\n' +
+(histVer?histVer.map(v=>'v'+v.v+': '+v.high+'F').join(' -> '):'N/A')+'\n\n' +
+'=== MODEL CONSENSUS (PEAK HIGH) ===\n' +
+modelPeaks+(modelMean?'\nMean: '+modelMean+'F | Spread: '+modelSpread+'F':'')+'\n\n' +
+'=== FULL MODEL PACING (hours from now -> temp) ===\n' +
+(pacingTable||'N/A')+'\n\n' +
+'Analyze ALL data above using your station climate knowledge. Provide sharp betting intelligence:\n' +
+'## TODAY HIGH - Current trajectory, pacing vs NWS forecast, is it locked or still moving?\n' +
+'## TOMORROW HIGH - Best projection synthesizing NWS + all model pacing curves. Where do models agree/diverge?\n' +
+'## PACING ANALYSIS - Which model is pacing hottest/coldest? Are models accelerating or plateauing? What does the shape of the curves suggest about the eventual high?\n' +
+'## STATION FACTORS - How do this station\'s specific climate quirks affect the forecast today?\n' +
+'## BETTING EDGE - OVER or UNDER on tomorrow high line. Be direct and give your confidence level.\n' +
+'## RISK FLAGS - What could invalidate this call?';
 
   try {
     const r = await fetch('/.netlify/functions/claude', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{role:'user',content:prompt}]})
+      body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:1500, messages:[{role:'user',content:prompt}]})
     });
     const d = await r.json();
     console.log('Claude response status:', r.status, 'body:', JSON.stringify(d).slice(0,200));
@@ -499,8 +643,7 @@ Provide sharp betting intelligence:
     el('analysis-body').className = 'analysis-body';
 
     // Structured bet signal
-    const betPrompt = `Weather for ${station.name}: today NWS high ${todayFcst&&todayFcst.high?todayFcst.high:'?'}F v${todayFcst?todayFcst.version:'?'}, tomorrow ${tomorrowFcst&&tomorrowFcst.high?tomorrowFcst.high:'?'}F v${tomorrowFcst?tomorrowFcst.version:'?'}, live high ${liveHigh&&liveHigh.wethr_high?liveHigh.wethr_high:'?'}F, models: ${models.map(m=>m.model+':'+m.high).join(',')}, history:${JSON.stringify(histVer)}.
-Return ONLY valid JSON, no markdown: {"tomorrowProjectedHigh":number,"tomorrowRangeLow":number,"tomorrowRangeHigh":number,"tomorrowConfidence":number,"trendDirection":"UP|DOWN|FLAT","betSide":"OVER|UNDER|PASS","betEdge":"STRONG|MODERATE|WEAK","betNote":"one sentence"}`;
+    const betPrompt = 'Weather for '+station.name+': today NWS high '+(todayFcst&&todayFcst.high?todayFcst.high:'?')+'F v'+(todayFcst?todayFcst.version:'?')+', tomorrow '+(tomorrowFcst&&tomorrowFcst.high?tomorrowFcst.high:'?')+'F v'+(tomorrowFcst?tomorrowFcst.version:'?')+', live high '+(liveHigh&&liveHigh.wethr_high?liveHigh.wethr_high:'?')+'F, model peaks: '+modelPeaks+', model mean: '+(modelMean||'?')+'F, spread: '+(modelSpread||'?')+'F, version drift: '+(histVer?histVer.map(v=>'v'+v.v+':'+v.high).join(','):'N/A')+'.\nStation climate note: '+station.climate.slice(0,200)+'\nReturn ONLY valid JSON, no markdown: {"tomorrowProjectedHigh":number,"tomorrowRangeLow":number,"tomorrowRangeHigh":number,"tomorrowConfidence":number,"trendDirection":"UP|DOWN|FLAT","betSide":"OVER|UNDER|PASS","betEdge":"STRONG|MODERATE|WEAK","betNote":"one sentence"}';
 
     const br = await fetch('/.netlify/functions/claude', {
       method: 'POST',
@@ -512,31 +655,25 @@ Return ONLY valid JSON, no markdown: {"tomorrowProjectedHigh":number,"tomorrowRa
       const bt = bd.content.map(b=>b.text||'').join('').trim().replace(/```json|```/g,'').trim();
       try {
         const sig = JSON.parse(bt);
-        // Render bet banner
         const side = sig.betSide || 'PASS';
         const sideEl = el('bet-side');
         sideEl.textContent = side;
         sideEl.className = 'bet-pill ' + side.toLowerCase();
-
         const edgeColor = sig.betEdge==='STRONG'?'#00e676':sig.betEdge==='MODERATE'?'var(--gold)':'var(--fire)';
         el('bet-edge').textContent = sig.betEdge || '\u2014';
         el('bet-edge').style.color = edgeColor;
-
         const trendArrow = sig.trendDirection==='UP'?'\u25B2':sig.trendDirection==='DOWN'?'\u25BC':'\u25B6';
         const trendColor = sig.trendDirection==='UP'?'#00e676':sig.trendDirection==='DOWN'?'var(--fire)':'var(--gold)';
         el('bet-trend').textContent = trendArrow + ' ' + (sig.trendDirection||'\u2014');
         el('bet-trend').style.color = trendColor;
-
         setText('bet-proj', (sig.tomorrowProjectedHigh||'\u2014') + '\u00B0F');
         setText('bet-range', '[' + (sig.tomorrowRangeLow||'\u2014') + '\u00B0 \u2013 ' + (sig.tomorrowRangeHigh||'\u2014') + '\u00B0]');
         setText('bet-conf-text', (sig.tomorrowConfidence||'\u2014') + '% CONFIDENCE');
         setText('bet-note', sig.betNote || '');
-
         const conf = sig.tomorrowConfidence || 0;
         const confColor = conf>=70?'#00e676':conf>=45?'var(--gold)':'var(--fire)';
         el('bet-conf-fill').style.width = conf + '%';
         el('bet-conf-fill').style.background = confColor;
-
         show('bet-banner');
       } catch(e){ console.warn('bet parse error:', e.message); }
     }
