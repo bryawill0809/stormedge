@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -380,7 +379,7 @@ async function loadData(){
       wethr('nws_forecasts.php', {station_code: station.code, date: today, mode: 'history'}).catch(e => { console.warn('FAIL history:', e.message); return null; }),
     ]);
 
-    console.log('DATA:', { liveHigh: !!liveHigh, latestObs: !!latestObs, obs1min: !!obs1min, todayFcst: !!todayFcst, tomorrowFcst: !!tomorrowFcst });
+    console.log('DATA:', { liveHigh: !!liveHigh, latestObs: !!latestObs, obs1min: !!obs1min, dewPt: latestObs&&latestObs.dew_point, windSpd: latestObs&&latestObs.wind_speed, todayFcst: !!todayFcst, tomorrowFcst: !!tomorrowFcst });
 
     // \u2500\u2500 LIVE HIGH \u2500\u2500
     if(liveHigh && liveHigh.wethr_high != null){
@@ -428,7 +427,7 @@ async function loadData(){
         {label:'TEMP (MT)', val: (mtTemp||'—')+'°F', sub: 'Official METAR', badge:'mt'},
         {label:'TEMP (1MIN)', val: (m1Temp||'—')+'°F', sub: tempDiffStr ? 'vs MT: '+tempDiffStr : 'Sub-hourly ASOS', badge:'1m'},
         {label:'DEW POINT', val: dewPt+'°F', sub: 'RH: '+rh+'%', badge:null},
-        {label:'WIND', val: windDir+' '+windSpd+'kt', sub: windGust ? 'Gust: '+windGust+'kt' : 'No gust', badge:null},
+        {label:'WIND', val: windDir+' '+Math.round(windSpd*1.15078)+'mph', sub: windGust ? 'Gust: '+Math.round(windGust*1.15078)+'mph' : 'No gust', badge:null},
         {label:'VISIBILITY', val: vis+' mi', sub: 'Surface', badge:null},
         {label:'ALTIMETER', val: altim+'"', sub: 'SLP: '+slp+'mb', badge:null},
       ];
@@ -611,11 +610,15 @@ async function runAI(station, liveHigh, obs, obs1min, todayFcst, tomorrowFcst, m
   // Obs values
   const mtTemp = obs ? roundTemp(obs.temperature_display) : null;
   const m1Temp = obs1min ? roundTemp(obs1min.temperature_display) : null;
-  const dewPt = obs && obs.dew_point != null ? Math.round(parseFloat(obs.dew_point)) : 'N/A';
+  // API returns wind in knots — convert to MPH (1 kt = 1.15078 mph)
+  const dewRaw = obs ? (obs.dew_point != null ? obs.dew_point : null) : null;
+  const dewPt = dewRaw != null ? parseFloat(dewRaw).toFixed(1) : 'N/A';
   const rh = obs && obs.relative_humidity ? Math.round(obs.relative_humidity) : 'N/A';
   const windDir = obs && obs.wind_direction ? obs.wind_direction : 'N/A';
-  const windSpd = obs && obs.wind_speed ? Math.round(parseFloat(obs.wind_speed)) : 'N/A';
-  const windGust = obs && obs.wind_gust ? Math.round(parseFloat(obs.wind_gust)) : null;
+  const windSpdKt = obs && obs.wind_speed ? parseFloat(obs.wind_speed) : null;
+  const windGustKt = obs && obs.wind_gust ? parseFloat(obs.wind_gust) : null;
+  const windSpd = windSpdKt != null ? Math.round(windSpdKt * 1.15078) : 'N/A';
+  const windGust = windGustKt != null ? Math.round(windGustKt * 1.15078) : null;
   const vis = obs && obs.visibility ? obs.visibility : 'N/A';
   const altim = obs && obs.altimeter ? parseFloat(obs.altimeter).toFixed(2) : 'N/A';
   const slp = obs && obs.sea_level_pressure ? parseFloat(obs.sea_level_pressure).toFixed(1) : 'N/A';
@@ -630,7 +633,7 @@ async function runAI(station, liveHigh, obs, obs1min, todayFcst, tomorrowFcst, m
 'Temp MT (official METAR, settlement basis): '+(mtTemp!=null?mtTemp:'N/A')+'F\n' +
 'Temp 1MIN (ASOS leading indicator): '+(m1Temp!=null?m1Temp:'N/A')+'F\n' +
 'Dew Point: '+dewPt+'F | RH: '+rh+'%\n' +
-'Wind: '+windDir+' '+windSpd+'kt'+(windGust?' Gust '+windGust+'kt':'')+'\n' +
+'Wind: '+windDir+' '+windSpd+'mph'+(windGust?' Gust '+windGust+'mph':'')+'\n' +
 'Visibility: '+vis+' mi | Altimeter: '+altim+'" | SLP: '+slp+'mb\n\n' +
 '=== NWS FORECASTS ===\n' +
 'Today High: '+(todayFcst&&todayFcst.high!=null?todayFcst.high:'N/A')+'F (v'+(todayFcst?todayFcst.version:'?')+')\n' +
