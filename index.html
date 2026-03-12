@@ -1,1 +1,554 @@
+bash
 
+cat /home/claude/stormedge-site/index.html
+Output
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#07090d">
+<title>StormEdge</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Share+Tech+Mono&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:#07090d;color:#d0dde8;font-family:'Barlow',sans-serif;min-height:100vh}
+:root{
+  --acid:#00ffc8;--fire:#ff5533;--gold:#ffcb47;--ice:#5bc8ff;
+  --bg:#07090d;--s1:#0d1520;--s2:#111c2a;
+  --bd:rgba(0,255,200,0.12);--mut:#3b5268;--dim:#7a9ab8;
+  --mono:'Share Tech Mono',monospace;--cond:'Barlow Condensed',sans-serif;
+}
+@keyframes glow{0%,100%{text-shadow:0 0 20px rgba(0,255,200,.3)}50%{text-shadow:0 0 50px rgba(0,255,200,.8)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* LAYOUT */
+.wrap{max-width:1100px;margin:0 auto;padding:22px 16px}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding-bottom:16px;border-bottom:1px solid var(--bd);margin-bottom:18px}
+.logo{font-family:var(--cond);font-weight:900;font-size:30px;letter-spacing:3px;color:var(--acid);text-shadow:0 0 24px rgba(0,255,200,.2)}
+.logo em{color:var(--fire);font-style:normal}
+.hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.update-time{font-family:var(--mono);font-size:9px;color:var(--mut);letter-spacing:1px}
+.btn{background:none;border:1px solid var(--bd);color:var(--acid);padding:7px 14px;font-family:var(--mono);font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .2s}
+.btn:hover{background:rgba(0,255,200,.06);border-color:var(--acid)}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+
+/* STATION */
+.station-wrap{position:relative;margin-bottom:16px}
+.station-btn{width:100%;background:var(--s1);border:1px solid var(--bd);color:#fff;padding:13px 18px;text-align:left;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-family:var(--cond);font-size:18px;font-weight:700;letter-spacing:1px;transition:border-color .2s}
+.station-btn:hover{border-color:var(--acid)}
+.station-code{font-family:var(--mono);font-size:11px;color:var(--acid)}
+.station-drop{position:absolute;top:100%;left:0;right:0;background:#0c1929;border:1px solid var(--acid);z-index:100;max-height:320px;overflow-y:auto;display:none}
+.station-drop.open{display:block}
+.station-search{width:100%;background:var(--bg);border:none;border-bottom:1px solid var(--bd);color:#fff;padding:10px 14px;font-family:var(--mono);font-size:12px;outline:none}
+.station-item{padding:11px 16px;display:flex;justify-content:space-between;cursor:pointer;font-size:13px;border-bottom:1px solid rgba(255,255,255,.03);transition:background .15s}
+.station-item:hover,.station-item.active{background:rgba(0,255,200,.07)}
+.station-item-code{font-family:var(--mono);font-size:10px;color:var(--acid)}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:600px){.stats{grid-template-columns:1fr 1fr;} .stat-main{grid-column:1/-1}}
+.stat{background:var(--s1);border:1px solid var(--bd);padding:18px 20px;position:relative;overflow:hidden}
+.stat::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px}
+.stat.acid::after{background:linear-gradient(90deg,var(--acid),transparent)}
+.stat.fire::after{background:linear-gradient(90deg,var(--fire),transparent)}
+.stat.gold::after{background:linear-gradient(90deg,var(--gold),transparent)}
+.stat-label{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--mut);text-transform:uppercase;margin-bottom:8px}
+.stat-val{font-family:var(--cond);font-weight:900;line-height:1}
+.stat-big{font-size:64px}
+.stat-med{font-size:50px}
+.stat-info{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:6px}
+.chip{display:inline-block;background:rgba(0,255,200,.08);border:1px solid var(--bd);color:var(--acid);font-family:var(--mono);font-size:9px;padding:2px 8px;letter-spacing:1px;margin-top:8px}
+
+/* BET BANNER */
+.bet-banner{background:var(--s2);border:1px solid var(--bd);padding:16px 20px;margin-bottom:12px;display:grid;grid-template-columns:auto auto auto 1fr;gap:24px;align-items:center;position:relative;overflow:hidden}
+.bet-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--acid),var(--fire),transparent)}
+@media(max-width:600px){.bet-banner{grid-template-columns:1fr 1fr;gap:14px}}
+.bb-label{font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--mut);text-transform:uppercase;margin-bottom:5px}
+.bb-val{font-family:var(--cond);font-weight:900;font-size:28px}
+.bet-pill{font-family:var(--cond);font-weight:900;font-size:20px;letter-spacing:2px;padding:5px 14px;border:2px solid;display:inline-block}
+.bet-pill.over{color:#00e676;border-color:#00e676;background:rgba(0,230,118,.08)}
+.bet-pill.under{color:var(--fire);border-color:var(--fire);background:rgba(255,85,51,.08)}
+.bet-pill.pass{color:var(--gold);border-color:var(--gold);background:rgba(255,203,71,.08)}
+.conf-bar{height:3px;background:rgba(255,255,255,.06);border-radius:2px;margin-top:6px;overflow:hidden}
+.conf-fill{height:100%;border-radius:2px;transition:width 1s ease}
+
+/* MODELS */
+.models{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
+@media(max-width:600px){.models{grid-template-columns:repeat(3,1fr)}}
+.model-box{background:var(--s1);border:1px solid var(--bd);padding:12px 8px;text-align:center}
+.model-name{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--mut);margin-bottom:5px}
+.model-val{font-family:var(--cond);font-weight:900;font-size:26px}
+
+/* HOURLY */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:600px){.two-col{grid-template-columns:1fr}}
+.panel{background:var(--s1);border:1px solid var(--bd);padding:16px 18px}
+.panel-label{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--mut);text-transform:uppercase;margin-bottom:12px}
+.h-bars{display:flex;align-items:flex-end;gap:3px;height:72px}
+.h-bar{flex:1;border-radius:1px 1px 0 0;min-width:0}
+.h-labels{display:flex;gap:3px;margin-top:4px}
+.h-label{flex:1;font-family:var(--mono);font-size:7px;color:var(--mut);text-align:center;min-width:0;overflow:hidden}
+
+/* DRIFT */
+.drift{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.drift-item{background:var(--s1);border:1px solid var(--bd);padding:9px 12px;text-align:center;min-width:54px}
+.drift-v{font-family:var(--mono);font-size:8px;color:var(--mut);margin-bottom:2px}
+.drift-h{font-family:var(--cond);font-weight:900;font-size:22px}
+
+/* ANALYSIS */
+.analysis{background:var(--s1);border:1px solid var(--bd);padding:20px;margin-bottom:12px}
+.analysis-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.a-badge{background:var(--acid);color:#000;font-family:var(--mono);font-size:9px;letter-spacing:2px;padding:3px 8px;font-weight:700}
+.a-title{font-family:var(--cond);font-size:17px;font-weight:700;letter-spacing:2px}
+.analysis-body{font-size:13px;line-height:1.9;color:var(--dim)}
+.analysis-body h2{font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:2px;color:#cdd9e3;margin:14px 0 4px;text-transform:uppercase;border-left:3px solid var(--acid);padding-left:8px}
+.loading{animation:pulse 1.6s ease-in-out infinite;font-family:var(--mono);font-size:11px;color:var(--mut)}
+.error-box{background:rgba(255,85,51,.07);border:1px solid rgba(255,85,51,.2);color:#ff9999;padding:12px 16px;font-family:var(--mono);font-size:11px;margin-bottom:12px}
+.warn-box{background:rgba(255,203,71,.07);border:1px solid rgba(255,203,71,.2);color:var(--gold);padding:12px 16px;font-family:var(--mono);font-size:11px;margin-bottom:12px}
+.footer{font-family:var(--mono);font-size:9px;color:var(--mut);text-align:center;padding-top:14px;border-top:1px solid var(--bd);letter-spacing:1px}
+.spin{display:inline-block;animation:spin 1s linear infinite}
+.section-head{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--mut);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.section-head::after{content:'';flex:1;height:1px;background:var(--bd)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="logo">STORM<em>EDGE</em><div style="font-family:var(--mono);font-size:9px;color:var(--mut);letter-spacing:2px;margin-top:2px">HIGH TEMP BETTING INTELLIGENCE</div></div>
+    <div class="hdr-right">
+      <span class="update-time" id="update-time"></span>
+      <button class="btn" id="refresh-btn" onclick="loadData()">&#8635; REFRESH</button>
+    </div>
+  </div>
+
+  <!-- STATION PICKER -->
+  <div class="station-wrap">
+    <button class="station-btn" onclick="togglePicker()">
+      <span id="station-name">New York (Central Park)</span>
+      <span class="station-code" id="station-code">KNYC &#9660;</span>
+    </button>
+    <div class="station-drop" id="station-drop">
+      <input class="station-search" placeholder="Search&hellip;" oninput="filterStations(this.value)">
+      <div id="station-list"></div>
+    </div>
+  </div>
+
+  <!-- ERROR / WARN -->
+  <div id="error-box" style="display:none" class="error-box"></div>
+  <div id="warn-box" style="display:none" class="warn-box"></div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat acid stat-main">
+      <div class="stat-label">Live Running High &middot; NWS Logic</div>
+      <div class="stat-val stat-big" id="live-high" style="color:var(--acid);animation:glow 3s ease-in-out infinite">&mdash;&deg;</div>
+      <div class="stat-info" id="live-sub">Loading&hellip;</div>
+      <span class="chip" id="high-time" style="display:none"></span>
+    </div>
+    <div class="stat fire">
+      <div class="stat-label">Today NWS High</div>
+      <div class="stat-val stat-med" id="today-high" style="color:var(--fire)">&mdash;&deg;</div>
+      <div class="stat-info" id="today-sub"></div>
+    </div>
+    <div class="stat gold">
+      <div class="stat-label">Tomorrow NWS High</div>
+      <div class="stat-val stat-med" id="tomorrow-high" style="color:var(--gold)">&mdash;&deg;</div>
+      <div class="stat-info" id="tomorrow-sub"></div>
+    </div>
+  </div>
+
+  <!-- BET BANNER -->
+  <div class="bet-banner" id="bet-banner" style="display:none">
+    <div>
+      <div class="bb-label">Bet Side</div>
+      <div id="bet-side" class="bet-pill">&mdash;</div>
+    </div>
+    <div>
+      <div class="bb-label">Edge</div>
+      <div class="bb-val" id="bet-edge">&mdash;</div>
+    </div>
+    <div>
+      <div class="bb-label">Trend</div>
+      <div class="bb-val" id="bet-trend">&mdash;</div>
+    </div>
+    <div>
+      <div class="bb-label">AI Projection &mdash; Tomorrow</div>
+      <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
+        <div class="bb-val" style="color:var(--gold)" id="bet-proj">&mdash;</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--mut)" id="bet-range"></div>
+      </div>
+      <div class="conf-bar"><div class="conf-fill" id="bet-conf-fill"></div></div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--mut);margin-top:3px" id="bet-conf-text"></div>
+      <div style="font-size:12px;color:var(--dim);margin-top:6px;line-height:1.5" id="bet-note"></div>
+    </div>
+  </div>
+
+  <!-- MODELS -->
+  <div id="models-section" style="display:none">
+    <div class="section-head">Model Consensus &mdash; Peak High</div>
+    <div class="models" id="models-grid"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px" id="model-chips"></div>
+  </div>
+
+  <!-- HOURLY -->
+  <div class="two-col" id="hourly-section" style="display:none">
+    <div class="panel">
+      <div class="panel-label">Today Hourly (LST)</div>
+      <div class="h-bars" id="today-bars"></div>
+      <div class="h-labels" id="today-labels"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-label">Tomorrow Hourly (LST)</div>
+      <div class="h-bars" id="tomorrow-bars"></div>
+      <div class="h-labels" id="tomorrow-labels"></div>
+    </div>
+  </div>
+
+  <!-- DRIFT -->
+  <div id="drift-section" style="display:none">
+    <div class="section-head">Forecast Drift (version history)</div>
+    <div class="drift" id="drift-items"></div>
+  </div>
+
+  <!-- ANALYSIS -->
+  <div class="analysis">
+    <div class="analysis-head">
+      <div class="a-badge">FORENSIC AI</div>
+      <div class="a-title">METEOROLOGIST INTELLIGENCE REPORT</div>
+    </div>
+    <div id="analysis-body" class="loading">Waiting for data&hellip;</div>
+  </div>
+
+  <div class="footer">DATA: WETHR.NET API v2 &middot; ANALYSIS: CLAUDE AI &middot; NWS LOGIC &middot; FOR INFORMATIONAL USE ONLY &middot; NOT FINANCIAL ADVICE</div>
+</div>
+
+<script>
+const STATIONS = [
+  {code:"KNYC",name:"New York (Central Park)"},{code:"KLGA",name:"New York (LaGuardia)"},
+  {code:"KBOS",name:"Boston"},{code:"KPHL",name:"Philadelphia"},{code:"KDCA",name:"Washington D.C."},
+  {code:"KCLT",name:"Charlotte"},{code:"KATL",name:"Atlanta"},{code:"KMIA",name:"Miami"},
+  {code:"KJAX",name:"Jacksonville"},{code:"KMDW",name:"Chicago (Midway)"},{code:"KORD",name:"Chicago (O'Hare)"},
+  {code:"KDTW",name:"Detroit"},{code:"KMSP",name:"Minneapolis"},{code:"KBNA",name:"Nashville"},
+  {code:"KMSY",name:"New Orleans"},{code:"KOKC",name:"Oklahoma City"},{code:"KDFW",name:"Dallas/Ft Worth"},
+  {code:"KDAL",name:"Dallas (Love Field)"},{code:"KHOU",name:"Houston"},{code:"KSAT",name:"San Antonio"},
+  {code:"KAUS",name:"Austin"},{code:"KDEN",name:"Denver"},{code:"KBKF",name:"Aurora (Buckley)"},
+  {code:"KPHX",name:"Phoenix"},{code:"KLAS",name:"Las Vegas"},{code:"KLAX",name:"Los Angeles"},
+  {code:"KSFO",name:"San Francisco"},{code:"KSEA",name:"Seattle"},
+];
+const MODELS = ["GFS","HRRR","NBM","NAM","ECMWF-IFS"];
+
+let currentStation = STATIONS[0];
+let pickerOpen = false;
+
+// \u2500\u2500 HELPERS \u2500\u2500
+function getToday(){ return new Date().toISOString().split("T")[0]; }
+function getTomorrow(){ const d=new Date(); d.setDate(d.getDate()+1); return d.toISOString().split("T")[0]; }
+function el(id){ return document.getElementById(id); }
+function show(id){ const e=el(id); if(e) e.style.display=''; }
+function hide(id){ const e=el(id); if(e) e.style.display='none'; }
+function setText(id,val){ const e=el(id); if(e) e.textContent=val; }
+function setHTML(id,val){ const e=el(id); if(e) e.innerHTML=val; }
+function roundTemp(v){ return v != null ? Math.round(parseFloat(v)) : null; }
+
+async function wethr(file, params){
+  const qs = new URLSearchParams({_file: file, ...params}).toString();
+  const r = await fetch('/.netlify/functions/wethr?' + qs);
+  const json = await r.json();
+  if(json.error) throw new Error(json.error);
+  return json;
+}
+
+// \u2500\u2500 STATION PICKER \u2500\u2500
+function buildStationList(filter){
+  const list = el('station-list');
+  const items = STATIONS.filter(s =>
+    !filter || s.name.toLowerCase().includes(filter.toLowerCase()) || s.code.toLowerCase().includes(filter.toLowerCase())
+  );
+  list.innerHTML = items.map(s =>
+    '<div class="station-item' + (s.code===currentStation.code?' active':'') + '" onclick="selectStation(\'' + s.code + '\')">' +
+    '<span>' + s.name + '</span><span class="station-item-code">' + s.code + '</span></div>'
+  ).join('');
+}
+
+function togglePicker(){
+  pickerOpen = !pickerOpen;
+  el('station-drop').className = 'station-drop' + (pickerOpen ? ' open' : '');
+  el('station-code').textContent = currentStation.code + (pickerOpen ? ' \u25B2' : ' \u25BC');
+  if(pickerOpen){ buildStationList(''); }
+}
+
+function filterStations(v){ buildStationList(v); }
+
+function selectStation(code){
+  currentStation = STATIONS.find(s=>s.code===code);
+  setText('station-name', currentStation.name);
+  el('station-drop').className = 'station-drop';
+  el('station-code').textContent = currentStation.code + ' \u25BC';
+  pickerOpen = false;
+  loadData();
+}
+
+document.addEventListener('click', function(e){
+  if(pickerOpen && !e.target.closest('.station-wrap')){ 
+    pickerOpen=false; 
+    el('station-drop').className='station-drop';
+    el('station-code').textContent = currentStation.code + ' \u25BC';
+  }
+});
+
+// \u2500\u2500 HOURLY BARS \u2500\u2500
+function renderBars(barsId, labelsId, hourly, hue){
+  if(!hourly.length){ hide(barsId); return; }
+  const mx = Math.max(...hourly.map(h=>h.t));
+  const mn = Math.min(...hourly.map(h=>h.t));
+  const rng = mx - mn || 1;
+  el(barsId).innerHTML = hourly.map(h => {
+    const pct = (h.t - mn) / rng;
+    const ht = Math.max(6, pct * 65);
+    return '<div class="h-bar" style="height:' + ht + 'px;background:hsl(' + (hue - pct*18) + ',90%,58%);opacity:' + (0.5+pct*0.5) + '"></div>';
+  }).join('');
+  el(labelsId).innerHTML = hourly.map(h =>
+    '<div class="h-label">' + String(h.h).padStart(2,'0') + '</div>'
+  ).join('');
+}
+
+// \u2500\u2500 MAIN LOAD \u2500\u2500
+async function loadData(){
+  const station = currentStation;
+  const btn = el('refresh-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin">\u27F3</span>';
+  hide('error-box'); hide('warn-box');
+  hide('bet-banner'); hide('models-section'); hide('hourly-section'); hide('drift-section');
+  setText('analysis-body', ''); el('analysis-body').className = 'loading';
+  setHTML('analysis-body', 'Fetching weather data\u2026');
+
+  const today = getToday();
+  const tomorrow = getTomorrow();
+
+  try {
+    // Fetch all data \u2014 each call fails independently
+    const [liveHigh, latestObs, todayFcst, tomorrowFcst, historyData] = await Promise.all([
+      wethr('observations.php', {station_code: station.code, mode: 'wethr_high', logic: 'nws'}).catch(e => { console.warn('liveHigh:', e.message); return null; }),
+      wethr('observations.php', {station_code: station.code, mode: 'latest'}).catch(e => { console.warn('latestObs:', e.message); return null; }),
+      wethr('nws_forecasts.php', {station_code: station.code, date: today, mode: 'latest'}).catch(e => { console.warn('todayFcst:', e.message); return null; }),
+      wethr('nws_forecasts.php', {station_code: station.code, date: tomorrow, mode: 'latest'}).catch(e => { console.warn('tomorrowFcst:', e.message); return null; }),
+      wethr('nws_forecasts.php', {station_code: station.code, date: today, mode: 'history'}).catch(() => null),
+    ]);
+
+    console.log('DATA:', { liveHigh: !!liveHigh, latestObs: !!latestObs, todayFcst: !!todayFcst, tomorrowFcst: !!tomorrowFcst });
+
+    // \u2500\u2500 LIVE HIGH \u2500\u2500
+    if(liveHigh && liveHigh.wethr_high != null){
+      setText('live-high', liveHigh.wethr_high + '\u00B0');
+      if(liveHigh.time_of_high_utc){
+        const t = new Date(liveHigh.time_of_high_utc).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+        setText('high-time', 'SET ' + t + ' UTC');
+        show('high-time');
+      }
+    } else {
+      setText('live-high', '\u2014\u00B0');
+    }
+
+    // \u2500\u2500 CURRENT OBS \u2500\u2500
+    if(latestObs){
+      const temp = roundTemp(latestObs.temperature_display);
+      const rh = latestObs.relative_humidity ? Math.round(latestObs.relative_humidity) : '\u2014';
+      setText('live-sub', 'Current: ' + (temp||'\u2014') + '\u00B0F \u00B7 RH: ' + rh + '%');
+    }
+
+    // \u2500\u2500 TODAY \u2500\u2500
+    if(todayFcst && todayFcst.high != null){
+      setText('today-high', todayFcst.high + '\u00B0');
+      const dsm = latestObs && latestObs.dsm_high_display ? latestObs.dsm_high_display + '\u00B0F' : '\u2014';
+      setText('today-sub', 'DSM: ' + dsm + ' \u00B7 v' + todayFcst.version);
+    } else {
+      setText('today-high', '\u2014\u00B0');
+      setText('today-sub', 'No forecast yet');
+    }
+
+    // \u2500\u2500 TOMORROW \u2500\u2500
+    if(tomorrowFcst && tomorrowFcst.high != null){
+      setText('tomorrow-high', tomorrowFcst.high + '\u00B0');
+      setText('tomorrow-sub', 'Low: ' + (tomorrowFcst.low||'\u2014') + '\u00B0F \u00B7 v' + tomorrowFcst.version);
+    } else {
+      setText('tomorrow-high', '\u2014\u00B0');
+      setText('tomorrow-sub', 'No forecast yet');
+    }
+
+    // \u2500\u2500 HOURLY BARS \u2500\u2500
+    const todayHourly = (todayFcst && todayFcst.hourly_temps) ? todayFcst.hourly_temps.map((t,i)=>({h:i,t})).filter(x=>x.t!=null) : [];
+    const tomorrowHourly = (tomorrowFcst && tomorrowFcst.hourly_temps) ? tomorrowFcst.hourly_temps.map((t,i)=>({h:i,t})).filter(x=>x.t!=null) : [];
+    if(todayHourly.length || tomorrowHourly.length){
+      show('hourly-section');
+      renderBars('today-bars','today-labels',todayHourly,10);
+      renderBars('tomorrow-bars','tomorrow-labels',tomorrowHourly,45);
+    }
+
+    // \u2500\u2500 DRIFT \u2500\u2500
+    if(historyData && historyData.forecasts && historyData.forecasts.length > 1){
+      const versions = historyData.forecasts;
+      el('drift-items').innerHTML = versions.map((v,i) => {
+        const isLatest = i === versions.length-1;
+        return '<div class="drift-item" style="' + (isLatest?'border-color:var(--acid)':'') + '">' +
+          '<div class="drift-v">v' + v.version + (isLatest?' \u2605':'') + '</div>' +
+          '<div class="drift-h" style="color:' + (isLatest?'var(--fire)':'#fff') + '">' + (v.high||'\u2014') + '\u00B0</div>' +
+        '</div>';
+      }).join('');
+      show('drift-section');
+    }
+
+    // \u2500\u2500 MODEL CONSENSUS \u2500\u2500
+    const now = new Date();
+    const pe = new Date(now); pe.setHours(pe.getHours()+12);
+    const psStr = now.toISOString().split('.')[0]+'Z';
+    const peStr = pe.toISOString().split('.')[0]+'Z';
+    const mResults = await Promise.allSettled(
+      MODELS.map(m => wethr('forecasts.php', {location_name: station.code, start_valid_time: psStr, end_valid_time: peStr, model: m}))
+    );
+    const modelForecasts = [];
+    mResults.forEach((r,i) => {
+      if(r.status==='fulfilled' && Array.isArray(r.value) && r.value.length>0){
+        const temps = r.value.map(d=>d.temperature_f).filter(Boolean);
+        if(temps.length){ modelForecasts.push({model:MODELS[i], high:Math.round(Math.max(...temps))}); }
+      }
+    });
+    if(modelForecasts.length){
+      const mean = Math.round(modelForecasts.reduce((a,m)=>a+m.high,0)/modelForecasts.length);
+      const spread = Math.max(...modelForecasts.map(m=>m.high)) - Math.min(...modelForecasts.map(m=>m.high));
+      el('models-grid').innerHTML = modelForecasts.map(m => {
+        const diff = m.high - mean;
+        const col = diff>1?'var(--fire)':diff<-1?'var(--ice)':'#fff';
+        return '<div class="model-box"><div class="model-name">'+m.model+'</div><div class="model-val" style="color:'+col+'">'+m.high+'\u00B0</div></div>';
+      }).join('');
+      el('model-chips').innerHTML = 
+        '<span class="chip">MEAN ' + mean + '\u00B0F</span>' +
+        '<span class="chip" style="' + (spread>4?'color:var(--fire);border-color:rgba(255,85,51,.3)':'') + '">SPREAD ' + spread + '\u00B0F</span>';
+      show('models-section');
+    }
+
+    // \u2500\u2500 TIMESTAMP \u2500\u2500
+    setText('update-time', 'UPDATED ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + ' \u00B7 AUTO 5MIN');
+
+    // Warn if data missing
+    if(!latestObs && !liveHigh && !todayFcst){
+      el('warn-box').textContent = '\u26A0 Could not load weather data. Check back shortly.';
+      show('warn-box');
+    } else if(!todayFcst && !tomorrowFcst){
+      el('warn-box').textContent = '\u26A0 NWS forecast not yet available \u2014 showing live observations only';
+      show('warn-box');
+    }
+
+    // \u2500\u2500 AI ANALYSIS \u2500\u2500
+    el('analysis-body').className = 'loading';
+    setHTML('analysis-body', '\u25C8 Analyzing forecast drift and model spread\u2026<br>\u25C8 Generating betting intelligence\u2026');
+    runAI(station, liveHigh, latestObs, todayFcst, tomorrowFcst, modelForecasts, historyData);
+
+  } catch(err) {
+    console.error('loadData error:', err);
+    el('error-box').textContent = '\u26A0 ' + err.message;
+    show('error-box');
+    setHTML('analysis-body', 'Analysis unavailable.');
+    el('analysis-body').className = 'analysis-body';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '\u27F3 REFRESH';
+  }
+}
+
+async function runAI(station, liveHigh, obs, todayFcst, tomorrowFcst, models, history){
+  const histVer = history && history.forecasts ? history.forecasts.slice(-4).map(v=>({v:v.version,high:v.high})) : null;
+  const prompt = `You are a forensic meteorologist for temperature betting markets (Kalshi/Wethr.net).
+STATION: ${station.name} (${station.code}) | DATE: ${getToday()}
+LIVE WETHR HIGH (NWS): ${liveHigh&&liveHigh.wethr_high!=null?liveHigh.wethr_high:'N/A'}\u00B0F
+CURRENT TEMP: ${obs&&obs.temperature_display?Math.round(obs.temperature_display):'N/A'}\u00B0F | HUMIDITY: ${obs&&obs.relative_humidity?Math.round(obs.relative_humidity):'N/A'}%
+TODAY NWS FORECAST HIGH: ${todayFcst&&todayFcst.high!=null?todayFcst.high:'N/A'}\u00B0F (v${todayFcst?todayFcst.version:'?'})
+TOMORROW NWS FORECAST HIGH: ${tomorrowFcst&&tomorrowFcst.high!=null?tomorrowFcst.high:'N/A'}\u00B0F (v${tomorrowFcst?tomorrowFcst.version:'?'})
+FORECAST VERSION HISTORY: ${histVer?JSON.stringify(histVer):'N/A'}
+MODEL CONSENSUS: ${models.length?models.map(m=>m.model+':'+m.high+'F').join(', '):'N/A'}
+Provide sharp betting intelligence:
+## TODAY HIGH \u2014 Is it locked in or can it still move?
+## TOMORROW HIGH \u2014 Best projection with confidence range. Key drivers.
+## BETTING EDGE \u2014 OVER or UNDER on tomorrow high line. Be direct.
+## RISK FLAGS \u2014 What could invalidate this?`;
+
+  try {
+    const r = await fetch('/.netlify/functions/claude', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{role:'user',content:prompt}]})
+    });
+    const d = await r.json();
+    if(d.error){ throw new Error(d.error); }
+    const text = d.content ? d.content.map(b=>b.text||'').join('\n') : '';
+    const html = text
+      .replace(/## (.+)/g,'<h2>$1</h2>')
+      .replace(/\*\*(.+?)\*\*/g,'<strong style="color:#cdd9e3">$1</strong>')
+      .replace(/\n/g,'<br>');
+    setHTML('analysis-body', html);
+    el('analysis-body').className = 'analysis-body';
+
+    // Structured bet signal
+    const betPrompt = `Weather for ${station.name}: today NWS high ${todayFcst&&todayFcst.high?todayFcst.high:'?'}F v${todayFcst?todayFcst.version:'?'}, tomorrow ${tomorrowFcst&&tomorrowFcst.high?tomorrowFcst.high:'?'}F v${tomorrowFcst?tomorrowFcst.version:'?'}, live high ${liveHigh&&liveHigh.wethr_high?liveHigh.wethr_high:'?'}F, models: ${models.map(m=>m.model+':'+m.high).join(',')}, history:${JSON.stringify(histVer)}.
+Return ONLY valid JSON, no markdown: {"tomorrowProjectedHigh":number,"tomorrowRangeLow":number,"tomorrowRangeHigh":number,"tomorrowConfidence":number,"trendDirection":"UP|DOWN|FLAT","betSide":"OVER|UNDER|PASS","betEdge":"STRONG|MODERATE|WEAK","betNote":"one sentence"}`;
+
+    const br = await fetch('/.netlify/functions/claude', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:300, messages:[{role:'user',content:betPrompt}]})
+    });
+    const bd = await br.json();
+    if(!bd.error && bd.content){
+      const bt = bd.content.map(b=>b.text||'').join('').trim().replace(/```json|```/g,'').trim();
+      try {
+        const sig = JSON.parse(bt);
+        // Render bet banner
+        const side = sig.betSide || 'PASS';
+        const sideEl = el('bet-side');
+        sideEl.textContent = side;
+        sideEl.className = 'bet-pill ' + side.toLowerCase();
+
+        const edgeColor = sig.betEdge==='STRONG'?'#00e676':sig.betEdge==='MODERATE'?'var(--gold)':'var(--fire)';
+        el('bet-edge').textContent = sig.betEdge || '\u2014';
+        el('bet-edge').style.color = edgeColor;
+
+        const trendArrow = sig.trendDirection==='UP'?'\u25B2':sig.trendDirection==='DOWN'?'\u25BC':'\u25B6';
+        const trendColor = sig.trendDirection==='UP'?'#00e676':sig.trendDirection==='DOWN'?'var(--fire)':'var(--gold)';
+        el('bet-trend').textContent = trendArrow + ' ' + (sig.trendDirection||'\u2014');
+        el('bet-trend').style.color = trendColor;
+
+        setText('bet-proj', (sig.tomorrowProjectedHigh||'\u2014') + '\u00B0F');
+        setText('bet-range', '[' + (sig.tomorrowRangeLow||'\u2014') + '\u00B0 \u2013 ' + (sig.tomorrowRangeHigh||'\u2014') + '\u00B0]');
+        setText('bet-conf-text', (sig.tomorrowConfidence||'\u2014') + '% CONFIDENCE');
+        setText('bet-note', sig.betNote || '');
+
+        const conf = sig.tomorrowConfidence || 0;
+        const confColor = conf>=70?'#00e676':conf>=45?'var(--gold)':'var(--fire)';
+        el('bet-conf-fill').style.width = conf + '%';
+        el('bet-conf-fill').style.background = confColor;
+
+        show('bet-banner');
+      } catch(e){ console.warn('bet parse error:', e.message); }
+    }
+  } catch(err){
+    console.error('AI error:', err);
+    setHTML('analysis-body', 'AI analysis unavailable: ' + err.message);
+    el('analysis-body').className = 'analysis-body';
+  }
+}
+
+// \u2500\u2500 INIT \u2500\u2500
+buildStationList('');
+loadData();
+setInterval(loadData, 5*60*1000);
+</script>
+</body>
+</html>
