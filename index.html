@@ -757,7 +757,11 @@ async function runAI(station, liveHigh, wuHigh, obs, obs1min, todayFcst, tomorro
 'STATION: '+station.name+' ('+station.code+') | DATE: '+getToday(station.tz)+'\n\n' +
 '=== TIME CONTEXT (CRITICAL) ===\n' + timeContext + '\n\n' +
 '=== STATION MICROCLIMATE PROFILE ===\n' + station.climate + '\n\n' +
-'=== SETTLEMENT RULE ===\nOfficial high = highest METAR/ASOS integer temp recorded during calendar day. WU provides finer resolution leading indicator.\n\n' +
+'=== SETTLEMENT RULE ===\\n'
++ 'Official high = highest METAR/ASOS integer temp recorded during the calendar day.\\n'
++ 'WU Running High = real-time best proxy for final settlement.\\n'
++ 'CRITICAL: NWS forecast number is a PREDICTION — never use it as today actual settled high.\\n'
++ 'After 6pm: use WU Running High as the settled high for ALL overnight calculations.\\n' +
 '=== LIVE OBSERVATION TAPE ===\n' +
 'WU Running High (primary - finer resolution): '+(wuHigh&&wuHigh.wethr_high!=null?wuHigh.wethr_high:'N/A')+'F\n' +
 'NWS Running High (reference): '+(liveHigh&&liveHigh.wethr_high!=null?liveHigh.wethr_high:'N/A')+'F\n' +
@@ -778,9 +782,10 @@ async function runAI(station, liveHigh, wuHigh, obs, obs1min, todayFcst, tomorro
 '   If wind is in heating zone: confirm cap not active, but flag if a shift toward cap zone is possible.\n' +
 '3) Calculate heating velocity from obs tape (30min / 1hr / 3hr rate). State if accelerating, steady, decelerating, or plateaued.\n\n' +
 '=== NWS FORECAST ===\n' +
-'Today High: '+(todayFcst&&todayFcst.high!=null?todayFcst.high:'N/A')+'F (v'+(todayFcst?todayFcst.version:'?')+')\n' +
-'Tomorrow High: '+(tomorrowFcst&&tomorrowFcst.high!=null?tomorrowFcst.high:'N/A')+'F (v'+(tomorrowFcst?tomorrowFcst.version:'?')+')\n' +
-'Today Hourly: '+(todayFcst&&todayFcst.hourly_temps?todayFcst.hourly_temps.map((t,i)=>i+'h:'+t+'F').filter((s,i)=>i>=6&&i<=24&&!s.includes('null')).join(' '):'N/A')+'\n' +
+'TODAY ACTUAL SETTLED HIGH (WU - THIS is today real high, NOT the forecast): '+(wuHigh&&wuHigh.wethr_high!=null?wuHigh.wethr_high:'N/A')+'F\\n' +
+'Today NWS Forecast (forecast only, NOT the settled high): '+(todayFcst&&todayFcst.high!=null?todayFcst.high:'N/A')+'F (v'+(todayFcst?todayFcst.version:'?')+')\\n' +
+'Tomorrow NWS Forecast: '+(tomorrowFcst&&tomorrowFcst.high!=null?tomorrowFcst.high:'N/A')+'F (v'+(tomorrowFcst?tomorrowFcst.version:'?')+')\\n' +
+'Today Hourly: '+(todayFcst&&todayFcst.hourly_temps?todayFcst.hourly_temps.map((t,i)=>i+'h:'+t+'F').filter((s,i)=>i>=6&&i<=24&&!s.includes('null')).join(' '):'N/A')+'\\n' +
 'Tomorrow Hourly: '+(tomorrowFcst&&tomorrowFcst.hourly_temps?tomorrowFcst.hourly_temps.map((t,i)=>i+'h:'+t+'F').filter((s,i)=>i>=6&&i<=24&&!s.includes('null')).join(' '):'N/A')+'\n\n' +
 '=== FORECAST VERSION DRIFT ===\n' +
 (histVer?histVer.map(v=>'v'+v.v+':'+v.high+'F').join(' -> '):'N/A')+'\n\n' +
@@ -999,5 +1004,4 @@ buildStationList('');
 </script>
 </body>
 </html>
-
 
